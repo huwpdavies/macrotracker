@@ -1,0 +1,11 @@
+{
+  "permissions": {
+    "allow": [
+      "mcp__visualize__show_widget",
+      "Bash(ls *.db)",
+      "Bash(python3 -c ' *)",
+      "PowerShell(netstat -ano)",
+      "PowerShell(head -5)"
+    ]
+  }
+}

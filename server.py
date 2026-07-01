@@ -80,13 +80,15 @@ init_db()
 
 def migrate_db():
     with get_db() as conn:
-        for col, default in [
-            ('servings', '1'),
-            ('calories', '0'), ('protein', '0'),
-            ('carbs',    '0'), ('fat',     '0'), ('fibre', '0'),
+        for table, col, default in [
+            ('meals', 'servings',  '1'),
+            ('meals', 'calories',  '0'), ('meals', 'protein', '0'),
+            ('meals', 'carbs',     '0'), ('meals', 'fat',     '0'), ('meals', 'fibre', '0'),
+            ('meals', 'favourite', '0'),
+            ('ingredients', 'favourite', '0'),
         ]:
             try:
-                conn.execute(f'ALTER TABLE meals ADD COLUMN {col} REAL DEFAULT {default}')
+                conn.execute(f'ALTER TABLE {table} ADD COLUMN {col} INTEGER DEFAULT {default}')
             except Exception:
                 pass  # column already exists
 
@@ -104,7 +106,7 @@ def index():
 @app.route('/api/ingredients', methods=['GET'])
 def get_ingredients():
     with get_db() as conn:
-        rows = conn.execute('SELECT * FROM ingredients ORDER BY name COLLATE NOCASE').fetchall()
+        rows = conn.execute('SELECT * FROM ingredients ORDER BY favourite DESC, name COLLATE NOCASE').fetchall()
         return jsonify([dict(r) for r in rows])
 
 
@@ -137,9 +139,19 @@ def delete_ingredient(ing_id):
     return jsonify({'ok': True})
 
 
+@app.route('/api/ingredients/<ing_id>/favourite', methods=['PUT'])
+def toggle_ingredient_favourite(ing_id):
+    with get_db() as conn:
+        conn.execute(
+            'UPDATE ingredients SET favourite = CASE WHEN favourite=1 THEN 0 ELSE 1 END WHERE id=?',
+            (ing_id,)
+        )
+    return jsonify({'ok': True})
+
+
 # ── Meals ─────────────────────────────────────────────────────────────────────
 def fetch_meals(conn):
-    meals = [dict(r) for r in conn.execute('SELECT * FROM meals ORDER BY name COLLATE NOCASE').fetchall()]
+    meals = [dict(r) for r in conn.execute('SELECT * FROM meals ORDER BY favourite DESC, name COLLATE NOCASE').fetchall()]
     for m in meals:
         rows = conn.execute(
             'SELECT ingredient_id AS ingredientId, amount FROM meal_ingredients WHERE meal_id=? ORDER BY rowid',
@@ -196,6 +208,16 @@ def delete_meal(meal_id):
     with get_db() as conn:
         conn.execute('DELETE FROM meal_ingredients WHERE meal_id=?', (meal_id,))
         conn.execute('DELETE FROM meals WHERE id=?', (meal_id,))
+    return jsonify({'ok': True})
+
+
+@app.route('/api/meals/<meal_id>/favourite', methods=['PUT'])
+def toggle_meal_favourite(meal_id):
+    with get_db() as conn:
+        conn.execute(
+            'UPDATE meals SET favourite = CASE WHEN favourite=1 THEN 0 ELSE 1 END WHERE id=?',
+            (meal_id,)
+        )
     return jsonify({'ok': True})
 
 

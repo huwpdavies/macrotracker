@@ -105,6 +105,11 @@
         .li-detail { font-size: 0.72rem; color: var(--muted); margin-top: 0.15rem; line-height: 1.5; }
         .li-actions { display: flex; align-items: center; gap: 0.25rem; flex-shrink: 0; }
 
+        /* FAVOURITE */
+        .fav-btn { font-size: 1.1rem; color: var(--border); transition: color 0.1s; }
+        .fav-btn.fav-on { color: #D4920A; }
+        .fav-btn:hover:not(.fav-on) { color: var(--muted); }
+
         /* BADGE */
         .badge { font-size: 0.62rem; padding: 0.15rem 0.4rem; border-radius: 4px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.05em; vertical-align: middle; margin-left: 0.4rem; }
         .badge-active { background: rgba(92,175,136,0.14); color: var(--accent); border: 1px solid rgba(92,175,136,0.35); }
@@ -124,8 +129,12 @@
 
         /* INGREDIENT BUILDER */
         .ing-row { display: flex; gap: 0.4rem; align-items: center; margin-bottom: 0.4rem; }
-        .ing-row select.form-input { flex: 1; }
-        .ing-row input.form-input { width: 72px; flex-shrink: 0; }
+        .ing-search-wrap { flex: 1; position: relative; }
+        .ing-search-wrap input.form-input { width: 100%; }
+        .ing-amount { width: 72px; flex-shrink: 0; }
+        .ing-dropdown { position: absolute; top: calc(100% + 2px); left: 0; right: 0; background: var(--surface); border: 1px solid var(--border); border-radius: 8px; max-height: 200px; overflow-y: auto; z-index: 500; box-shadow: 0 4px 12px rgba(33,27,20,0.1); }
+        .ing-dropdown-item { padding: 0.5rem 0.75rem; cursor: pointer; font-size: 0.875rem; transition: background 0.1s; }
+        .ing-dropdown-item:hover { background: var(--surface2); }
         .macro-preview { font-size: 0.78rem; color: var(--muted); background: var(--surface2); border-radius: 7px; padding: 0.65rem 0.8rem; margin: 0.5rem 0; }
 
         /* SEARCH */
@@ -247,7 +256,10 @@
 <div class="overlay hidden" id="m-add-meal">
     <div class="modal">
         <div class="modal-title">Add Meal to Log</div>
-        <div id="meal-pick-list"></div>
+        <div class="form-group">
+            <input class="form-input" id="meal-search-q" type="text" placeholder="Search meals…" autocomplete="off" oninput="filterMealSearch()">
+        </div>
+        <div class="search-list" id="meal-pick-list"></div>
         <div class="modal-footer">
             <button class="btn btn-ghost" onclick="closeModal('m-add-meal')">Cancel</button>
         </div>
@@ -259,6 +271,19 @@
     <div class="modal">
         <div class="modal-title" id="ing-title">New Ingredient</div>
         <input type="hidden" id="ing-id">
+        <div class="form-group">
+            <div style="display:flex;justify-content:space-between;align-items:center">
+                <label class="form-label" style="margin:0">Auto-fill from nutrition label</label>
+                <button type="button" class="btn btn-ghost btn-xs" id="paste-toggle" onclick="toggleNutritionPaste()">Show</button>
+            </div>
+            <div id="nutrition-paste-wrap" class="hidden" style="margin-top:0.4rem">
+                <textarea class="form-input" id="nutrition-paste" rows="4"
+                          placeholder="Paste nutrition label text here (e.g. from Tesco, Sainsbury's, ASDA)…"
+                          oninput="parseNutritionPaste()"
+                          style="resize:vertical;font-family:monospace;font-size:0.78rem;line-height:1.5"></textarea>
+                <div id="nutrition-parse-result" style="font-size:0.72rem;margin-top:0.3rem;min-height:1.1em"></div>
+            </div>
+        </div>
         <div class="form-group">
             <label class="form-label">Name</label>
             <input class="form-input" id="ing-name" type="text" placeholder="e.g. Chicken Breast">
@@ -631,24 +656,36 @@ async function confirmAddFood() {
 
 // ─── Add Meal ─────────────────────────────────────────────────────────────────
 function openAddMeal() {
-    const el = document.getElementById('meal-pick-list');
-    if (!state.meals.length) {
-        el.innerHTML = '<div class="empty">No saved meals yet. Create some in the Meals tab!</div>';
-    } else {
-        el.innerHTML = state.meals.map(m => {
-            const perServ  = getMealMacros(m);
-            const servings = m.servings || 1;
-            const servingLabel = servings > 1 ? ` (1 of ${servings} servings)` : '';
-            return `<div class="list-item" style="cursor:pointer" onclick="pickMeal('${m.id}')">
-                <div class="li-info">
-                    <div class="li-name">${m.name}<span style="font-weight:400;color:var(--muted);font-size:0.8rem"> ${servingLabel}</span></div>
-                    <div class="li-detail">${macroText(perServ)}</div>
-                </div>
-                <span style="color:var(--accent);font-size:0.8rem">Add &rarr;</span>
-            </div>`;
-        }).join('');
-    }
+    document.getElementById('meal-search-q').value = '';
+    renderMealPickList('');
     openModal('m-add-meal');
+    setTimeout(() => document.getElementById('meal-search-q').focus(), 60);
+}
+
+function filterMealSearch() {
+    renderMealPickList(document.getElementById('meal-search-q').value);
+}
+
+function renderMealPickList(q) {
+    const el = document.getElementById('meal-pick-list');
+    const meals = q.trim()
+        ? state.meals.filter(m => m.name.toLowerCase().includes(q.trim().toLowerCase()))
+        : state.meals;
+    if (!meals.length) {
+        el.innerHTML = state.meals.length === 0
+            ? '<div class="empty">No saved meals yet. Create some in the Meals tab!</div>'
+            : '<div class="empty" style="padding:0.75rem 1rem">No meals match your search.</div>';
+        return;
+    }
+    el.innerHTML = meals.map(m => {
+        const perServ  = getMealMacros(m);
+        const servings = m.servings || 1;
+        const servingLabel = servings > 1 ? ` (1 of ${servings} servings)` : '';
+        return `<div class="search-result" onclick="pickMeal('${m.id}')">
+            <div class="sr-name">${m.name}<span style="font-weight:400;color:var(--muted);font-size:0.8rem"> ${servingLabel}</span></div>
+            <div class="sr-detail">${macroText(perServ)}</div>
+        </div>`;
+    }).join('');
 }
 
 async function pickMeal(id) {
@@ -686,6 +723,7 @@ function renderIngredients() {
                 <div class="li-detail">Per ${i.per}g &nbsp;|&nbsp; ${i.calories} kcal &nbsp;|&nbsp; Protein: ${i.protein}g &nbsp;|&nbsp; Carbs: ${i.carbs}g &nbsp;|&nbsp; Fat: ${i.fat}g &nbsp;|&nbsp; Fibre: ${i.fibre}g</div>
             </div>
             <div class="li-actions">
+                <button class="icon-btn fav-btn${i.favourite ? ' fav-on' : ''}" onclick="toggleIngFavourite('${i.id}')" title="${i.favourite ? 'Unfavourite' : 'Favourite'}">&#9733;</button>
                 <button class="icon-btn" onclick="openIngredientForm('${i.id}')" title="Edit">&#9998;</button>
                 <button class="icon-btn" onclick="deleteIngredient('${i.id}')" title="Delete">&#128465;</button>
             </div>
@@ -704,6 +742,10 @@ function openIngredientForm(id) {
     document.getElementById('ing-car').value  = ing?.carbs    ?? '';
     document.getElementById('ing-fat').value  = ing?.fat      ?? '';
     document.getElementById('ing-fib').value  = ing?.fibre    ?? '';
+    document.getElementById('nutrition-paste').value = '';
+    document.getElementById('nutrition-parse-result').innerHTML = '';
+    document.getElementById('nutrition-paste-wrap').classList.add('hidden');
+    document.getElementById('paste-toggle').textContent = 'Show';
     openModal('m-ingredient');
     setTimeout(() => document.getElementById('ing-name').focus(), 60);
 }
@@ -738,6 +780,80 @@ async function deleteIngredient(id) {
     renderIngredients();
 }
 
+async function toggleIngFavourite(id) {
+    await api.put(`/api/ingredients/${id}/favourite`, {});
+    state.ingredients = await api.get('/api/ingredients');
+    renderIngredients();
+}
+
+// ─── Nutrition label parser ───────────────────────────────────────────────────
+function toggleNutritionPaste() {
+    const wrap = document.getElementById('nutrition-paste-wrap');
+    const btn  = document.getElementById('paste-toggle');
+    const hidden = wrap.classList.toggle('hidden');
+    btn.textContent = hidden ? 'Show' : 'Hide';
+    if (!hidden) setTimeout(() => document.getElementById('nutrition-paste').focus(), 60);
+}
+
+function extractNutrition(raw) {
+    const out = { per: 100, calories: null, protein: null, carbs: null, fat: null, fibre: null };
+    const firstNum = s => { const m = s.match(/(\d+(?:[.,]\d+)?)/); return m ? parseFloat(m[1].replace(',', '.')) : null; };
+
+    const perM = raw.match(/per\s*(\d+)\s*g/i);
+    if (perM) out.per = +perM[1];
+
+    for (const line of raw.split(/[\n\r]+/)) {
+        const l = line.trim();
+        if (!l) continue;
+        const ll = l.toLowerCase();
+
+        if (out.calories === null) {
+            if (/kcal/i.test(l)) {
+                const m = l.match(/(\d+(?:[.,]\d+)?)\s*kcal/i);
+                if (m) { out.calories = parseFloat(m[1]); continue; }
+            }
+            if (/^calories?\b/i.test(ll)) {
+                const n = firstNum(l); if (n !== null) { out.calories = n; continue; }
+            }
+            if (/^energy\b/i.test(ll)) continue;
+        }
+        if (out.fat === null && /^(?:total\s+)?fat\b/i.test(ll))            { out.fat    = firstNum(l); continue; }
+        if (out.carbs === null && /^(?:total\s+)?carbohydrates?\b/i.test(ll)) { out.carbs  = firstNum(l); continue; }
+        if (out.protein === null && /^protein\b/i.test(ll))                  { out.protein = firstNum(l); continue; }
+        if (out.fibre === null && /^(?:dietary\s+)?fi[bv]re?\b/i.test(ll))   { out.fibre  = firstNum(l); continue; }
+    }
+    return out;
+}
+
+function parseNutritionPaste() {
+    const raw = document.getElementById('nutrition-paste').value;
+    const resultEl = document.getElementById('nutrition-parse-result');
+    if (!raw.trim()) { resultEl.innerHTML = ''; return; }
+
+    const p = extractNutrition(raw);
+    const filled = [], missing = [];
+
+    document.getElementById('ing-per').value = p.per;
+
+    const trySet = (id, val, name, fmt) => {
+        if (val !== null) { document.getElementById(id).value = val; filled.push(fmt(val)); }
+        else missing.push(name);
+    };
+    trySet('ing-cal', p.calories, 'calories', v => `${v} kcal`);
+    trySet('ing-pro', p.protein,  'protein',  v => `P ${v}g`);
+    trySet('ing-car', p.carbs,    'carbs',    v => `C ${v}g`);
+    trySet('ing-fat', p.fat,      'fat',      v => `F ${v}g`);
+    trySet('ing-fib', p.fibre,    'fibre',    v => `Fb ${v}g`);
+
+    if (!filled.length) {
+        resultEl.innerHTML = `<span style="color:var(--red)">Nothing recognised — try copying just the nutrition table rows.</span>`;
+    } else {
+        const ok   = `<span style="color:var(--accent)">&#10003; ${filled.join(' &nbsp;&middot;&nbsp; ')}</span>`;
+        const warn = missing.length ? ` &nbsp;&middot;&nbsp; <span style="color:var(--orange)">Not found: ${missing.join(', ')}</span>` : '';
+        resultEl.innerHTML = ok + warn;
+    }
+}
+
 // ─── Meals ────────────────────────────────────────────────────────────────────
 function renderMeals() {
     const el = document.getElementById('meal-list');
@@ -759,6 +875,7 @@ function renderMeals() {
                 <div class="li-detail" style="margin-top:0.2rem">Per serving: ${macroText(perServ)}</div>
             </div>
             <div class="li-actions">
+                <button class="icon-btn fav-btn${m.favourite ? ' fav-on' : ''}" onclick="toggleMealFavourite('${m.id}')" title="${m.favourite ? 'Unfavourite' : 'Favourite'}">&#9733;</button>
                 <button class="icon-btn" onclick="openMealForm('${m.id}')" title="Edit">&#9998;</button>
                 <button class="icon-btn" onclick="deleteMeal('${m.id}')" title="Delete">&#128465;</button>
             </div>
@@ -785,26 +902,81 @@ function openMealForm(id) {
 }
 
 function addIngRow(ingredientId, amount) {
-    const opts = state.ingredients
-        .map(i => `<option value="${i.id}"${i.id === ingredientId ? ' selected' : ''}>${i.name}</option>`)
-        .join('');
+    const ing = ingredientId ? state.ingredients.find(i => i.id === ingredientId) : null;
     const row = document.createElement('div');
     row.className = 'ing-row';
     row.innerHTML = `
-        <select class="form-input" onchange="refreshMealPreview()">
-            <option value="">Select ingredient…</option>${opts}
-        </select>
-        <input class="form-input" type="number" min="1" value="${amount || ''}" placeholder="g" oninput="refreshMealPreview()">
-        <button class="icon-btn" onclick="this.parentElement.remove();refreshMealPreview()" title="Remove">&#10005;</button>
+        <div class="ing-search-wrap">
+            <input class="form-input" type="text" placeholder="Search ingredient…" autocomplete="off"
+                   data-ing-id="${ingredientId || ''}" value="${ing ? ing.name.replace(/"/g, '&quot;') : ''}"
+                   oninput="onIngInput(this)" onfocus="onIngFocus(this)" onblur="onIngBlur(this)">
+            <div class="ing-dropdown hidden"></div>
+        </div>
+        <input class="form-input ing-amount" type="number" min="1" value="${amount || ''}" placeholder="g" oninput="refreshMealPreview()">
+        <button class="icon-btn" onclick="this.closest('.ing-row').remove();refreshMealPreview()" title="Remove">&#10005;</button>
     `;
     document.getElementById('ing-rows').appendChild(row);
+}
+
+function onIngInput(input) {
+    const q = input.value.trim().toLowerCase();
+    const results = q ? state.ingredients.filter(i => i.name.toLowerCase().includes(q)) : state.ingredients;
+    renderIngDropdown(input, results);
+    const sel = state.ingredients.find(i => i.id === input.dataset.ingId);
+    if (!sel || sel.name !== input.value) {
+        input.dataset.ingId = '';
+        refreshMealPreview();
+    }
+}
+
+function onIngFocus(input) {
+    const q = input.value.trim().toLowerCase();
+    const results = q ? state.ingredients.filter(i => i.name.toLowerCase().includes(q)) : state.ingredients;
+    renderIngDropdown(input, results);
+}
+
+function onIngBlur(input) {
+    setTimeout(() => {
+        input.parentElement.querySelector('.ing-dropdown').classList.add('hidden');
+        if (!input.dataset.ingId) {
+            input.value = '';
+        } else {
+            const ing = state.ingredients.find(i => i.id === input.dataset.ingId);
+            if (ing) input.value = ing.name;
+        }
+    }, 150);
+}
+
+function renderIngDropdown(input, results) {
+    const dropdown = input.parentElement.querySelector('.ing-dropdown');
+    dropdown.innerHTML = results.length
+        ? results.slice(0, 20).map(i =>
+            `<div class="ing-dropdown-item" onmousedown="selectIngDropdown(event,'${i.id}')">${i.name}</div>`
+          ).join('')
+        : '<div class="ing-dropdown-item" style="color:var(--muted);cursor:default">No matches</div>';
+    dropdown.classList.remove('hidden');
+}
+
+function selectIngDropdown(event, ingId) {
+    event.preventDefault();
+    const dropdown = event.currentTarget.closest('.ing-dropdown');
+    const input    = dropdown.previousElementSibling;
+    const ing      = state.ingredients.find(i => i.id === ingId);
+    if (!ing) return;
+    input.dataset.ingId = ingId;
+    input.value = ing.name;
+    dropdown.classList.add('hidden');
+    refreshMealPreview();
+    const amtInput = input.closest('.ing-row').querySelector('.ing-amount');
+    amtInput.focus();
+    amtInput.select();
 }
 
 function refreshMealPreview() {
     const tot = { calories:0, protein:0, carbs:0, fat:0, fibre:0 };
     document.querySelectorAll('#ing-rows .ing-row').forEach(r => {
-        const id  = r.querySelector('select').value;
-        const amt = parseFloat(r.querySelector('input').value) || 0;
+        const id  = r.querySelector('[data-ing-id]').dataset.ingId;
+        const amt = parseFloat(r.querySelector('.ing-amount').value) || 0;
         const ing = state.ingredients.find(i => i.id === id);
         if (!ing || !amt) return;
         const m = calcIngMacros(ing, amt);
@@ -830,8 +1002,8 @@ async function saveMeal() {
     if (!name) { alert('Please enter a meal name.'); return; }
     const ingredients = [];
     document.querySelectorAll('#ing-rows .ing-row').forEach(r => {
-        const ingredientId = r.querySelector('select').value;
-        const amount       = parseFloat(r.querySelector('input').value) || 0;
+        const ingredientId = r.querySelector('[data-ing-id]').dataset.ingId;
+        const amount       = parseFloat(r.querySelector('.ing-amount').value) || 0;
         if (ingredientId && amount > 0) ingredients.push({ ingredientId, amount });
     });
     const servings = Math.max(1, parseFloat(document.getElementById('meal-servings').value) || 1);
@@ -864,6 +1036,12 @@ async function deleteMeal(id) {
     if (!confirm('Delete this meal?')) return;
     await api.del(`/api/meals/${id}`);
     state.meals = state.meals.filter(m => m.id !== id);
+    renderMeals();
+}
+
+async function toggleMealFavourite(id) {
+    await api.put(`/api/meals/${id}/favourite`, {});
+    state.meals = await api.get('/api/meals');
     renderMeals();
 }
 

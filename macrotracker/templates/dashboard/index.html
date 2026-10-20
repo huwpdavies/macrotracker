@@ -2,4 +2,5 @@
 {% block content %}
   <h1>Hello, Macro Tracker! 🏖️</h1>
   <p>The skeleton is alive.</p>
+  <p>Database check: {{ food_count }} foods, active goal: {{ active_goal.name if active_goal else "none" }}.</p>
 {% endblock %}

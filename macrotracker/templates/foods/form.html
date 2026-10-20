@@ -1,0 +1,35 @@
+{% extends "base.html" %}
+{% block title %}{{ 'Edit' if food else 'New' }} food · Macro Tracker{% endblock %}
+{% block content %}
+  <h1>{{ 'Edit ' ~ food.name if food else 'New food' }}</h1>
+
+  {% macro field(f) %}
+    <label>{{ f.label.text }} {{ f() }}</label>
+    {% for error in f.errors %}<p class="error">{{ error }}</p>{% endfor %}
+  {% endmacro %}
+
+  {# Normal submit saves the food. Typing also posts the form to /preview, and HTMX swaps the reply into #preview. #}
+  <form method="post" class="form"
+        hx-post="{{ url_for('foods.preview') }}" hx-trigger="input changed delay:300ms, load"
+        hx-target="#preview">
+    {{ form.hidden_tag() }}
+    {{ field(form.name) }}
+    {{ field(form.brand) }}
+    {{ field(form.unit) }}
+    {{ field(form.basis_amount) }}
+    <p class="muted">Enter the label values for that amount (e.g. per 100 g).</p>
+    {{ field(form.protein_g) }}
+    {{ field(form.carbs_g) }}
+    {{ field(form.fat_g) }}
+    {{ field(form.salt_g) }}
+    {{ field(form.fibre_g) }}
+    {{ field(form.serving_size) }}
+    <p class="muted">In the unit above, e.g. 105 for a 105 g can, or 0.5 for half an avocado.</p>
+    {{ field(form.serving_label) }}
+
+    <div id="preview" class="card"></div>
+
+    <button type="submit" class="button">Save</button>
+    <a href="{{ url_for('foods.detail', food_id=food.id) if food else url_for('foods.index') }}">Cancel</a>
+  </form>
+{% endblock %}

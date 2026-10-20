@@ -22,6 +22,8 @@ class Config:
     SECRET_KEY = os.environ.get("SECRET_KEY", "dev-only-not-secret")
     SQLALCHEMY_DATABASE_URI = _database_uri()
     SQLALCHEMY_TRACK_MODIFICATIONS = False
+    # Units offered on the food form. Add to this list to extend it.
+    UNITS = ["g", "ml", "unit", "slice", "can"]
     # Serverless: open a connection per use and let Supabase's pooler do the pooling.
     # prepare_threshold=None turns off prepared statements, which the pooler doesn't support.
     SQLALCHEMY_ENGINE_OPTIONS = (
@@ -33,5 +35,6 @@ class Config:
 
 class TestConfig(Config):
     TESTING = True
+    WTF_CSRF_ENABLED = False
     SQLALCHEMY_DATABASE_URI = "sqlite://"
     SQLALCHEMY_ENGINE_OPTIONS = {}

@@ -1,0 +1,16 @@
+{% if foods %}
+  <ul class="rows">
+    {% for food in foods %}
+      <li>
+        <a href="{{ url_for('foods.detail', food_id=food.id) }}">
+          <strong>{{ food.name }}</strong>{% if food.brand %} <span class="muted">({{ food.brand }})</span>{% endif %}
+        </a>
+        <span class="muted">{{ food.serving_label or (food.serving_size|num ~ ' ' ~ food.unit) }}</span>
+      </li>
+    {% endfor %}
+  </ul>
+{% elif q %}
+  <p class="muted">No foods match "{{ q }}".</p>
+{% else %}
+  <p class="muted">No foods yet. <a href="{{ url_for('foods.new') }}">Add your first food</a>.</p>
+{% endif %}

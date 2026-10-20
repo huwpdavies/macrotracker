@@ -1,0 +1,12 @@
+{% extends "base.html" %}
+{% block title %}Foods · Macro Tracker{% endblock %}
+{% block content %}
+  <h1>Foods</h1>
+  <p><a class="button" href="{{ url_for('foods.new') }}">+ Add food</a></p>
+  <input type="search" name="q" value="{{ q }}" placeholder="Search foods…"
+         hx-get="{{ url_for('foods.index') }}" hx-trigger="input changed delay:300ms, search"
+         hx-target="#food-list">
+  <div id="food-list">
+    {% include "partials/_food_rows.html" %}
+  </div>
+{% endblock %}

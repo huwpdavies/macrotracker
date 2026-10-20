@@ -6,9 +6,19 @@
   <meta name="robots" content="noindex">
   <title>{% block title %}Macro Tracker{% endblock %}</title>
   <link rel="stylesheet" href="/css/main.css">
+  <script src="/js/htmx.min.js" defer></script>
 </head>
 <body>
+  <nav class="nav">
+    <a href="{{ url_for('dashboard.index') }}">Home</a>
+    <a href="{{ url_for('foods.index') }}">Foods</a>
+  </nav>
   <main>
+    {% with messages = get_flashed_messages(with_categories=true) %}
+      {% for category, message in messages %}
+        <p class="flash flash-{{ category }}">{{ message }}</p>
+      {% endfor %}
+    {% endwith %}
     {% block content %}{% endblock %}
   </main>
 </body>

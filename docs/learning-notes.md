@@ -16,3 +16,8 @@
 - Concepts: a model is a Python class that maps to a table; a migration is a versioned script that changes the schema (`flask db migrate` writes it, `flask db upgrade` applies it); `DATABASE_URL` lives in `.env` locally and Vercel settings in production; `NullPool` = one connection per use, because serverless instances would otherwise hoard connections and Supabase's pooler does the pooling; a partial unique index makes the database itself allow only one active goal.
 - Files to read: `macrotracker/models.py`, `macrotracker/config.py`, `macrotracker/seed.py`, `tests/test_models.py`.
 - Gotcha: Supabase's *direct* connection (port 5432) is IPv6-only and Vercel can't reach it. Use the *transaction pooler* string (port 6543, user `postgres.<ref>`, host `...pooler.supabase.com`).
+
+## Phase 3: Foods
+- Built: foods list (HTMX search), detail, create/edit/delete with Flask-WTF forms + CSRF, live per-serving preview, `services/nutrition.py` with tests.
+- Concepts: GET shows a page, POST changes data, then redirect so refresh can't resubmit; `form.validate_on_submit()` runs the rules in `forms.py`; CSRF tokens stop other sites posting to us; HTMX attributes (`hx-get`, `hx-post`, `hx-target`) fetch small HTML fragments from routes and swap them in; a route checks the `HX-Request` header to return a fragment instead of a full page; display rounding happens in a Jinja filter, never in the stored numbers.
+- Files to read: `macrotracker/blueprints/foods.py`, `macrotracker/forms.py`, `macrotracker/services/nutrition.py`, `macrotracker/templates/foods/form.html`.

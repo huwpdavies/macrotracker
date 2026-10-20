@@ -1,13 +1,8 @@
 {% extends "base.html" %}
 {% block title %}{{ food.name }} · Macro Tracker{% endblock %}
 {% block content %}
-  <h1>{{ food.name }}</h1>
-
-  <h2>Per {{ food.basis_amount|num(2) }} {{ food.unit }}</h2>
-  {% with macros = per_basis %}{% include "partials/_nutrient_chips.html" %}{% endwith %}
-
-  <h2>Per serving ({{ food.serving_label or (food.serving_size|num(2) ~ " " ~ food.unit) }})</h2>
-  {% with macros = per_serving %}{% include "partials/_nutrient_chips.html" %}{% endwith %}
+  {% set editing = False %}
+  {% include "foods/_sheet.html" %}
 
   <p>
     <a class="button" href="{{ url_for('foods.edit', food_id=food.id) }}">Edit</a>

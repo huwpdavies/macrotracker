@@ -40,3 +40,53 @@ legend { font-weight: 700; padding: 0 .4rem; }
 .item-mode { flex: 2 1 8rem; min-width: 0; }
 .icon-btn { background: none; border: 0; font-size: 1.1rem; cursor: pointer; min-width: 2.25rem; min-height: 2.25rem; color: #2B3A4A; }
 .button.ghost { background: #DFF3FA; color: #2A6F97; }
+
+/* Food sheet: the detail page and the edit form share this layout. */
+.sr-only { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
+.sheet-title { display: block; width: 100%; box-sizing: border-box; font: inherit; font-size: 2rem; font-weight: 800; line-height: 1.2; margin: .67rem 0; padding: 0; border: 0; background: none; color: inherit; }
+input.sheet-title, .cell input, .sheet-basis input, .sheet-basis select, .sheet-serving input { border: 1px dashed #c9b27a; border-radius: 10px; background: #fff; }
+input.sheet-title { padding: .1rem .4rem; margin-left: -.4rem; width: calc(100% + .4rem); }
+.sheet-basis { font-size: 1.1rem; font-weight: 700; margin: .5rem 0; display: flex; align-items: center; gap: .5rem; flex-wrap: wrap; }
+.basis-input { width: 6rem; font: inherit; padding: .25rem .5rem; box-sizing: border-box; }
+.unit-select { font: inherit; padding: .25rem .5rem; }
+.cells { display: grid; grid-template-columns: repeat(3, 1fr); gap: .6rem; }
+.cell { display: block; background: #fff; border: 1px solid #F3E3BF; border-top-width: 5px; border-radius: 14px; padding: .5rem .7rem; }
+.cell-label { display: block; font-size: .8rem; font-weight: 700; color: #5b6b7b; }
+.cell-line { display: flex; align-items: baseline; gap: .25rem; }
+.cell-value { font: inherit; font-size: 1.5rem; font-weight: 800; line-height: 1.3; min-width: 0; width: 100%; box-sizing: border-box; padding: 0 .25rem; margin-left: -.25rem; color: inherit; }
+.cell small { color: #5b6b7b; }
+.cell-cal { border-top-color: #E0A526; } .cell-pro { border-top-color: #2A6F97; } .cell-car { border-top-color: #E8873A; }
+.cell-fat { border-top-color: #D9564A; } .cell-fib { border-top-color: #3E9E7A; } .cell-sal { border-top-color: #8a7bc4; }
+.sheet-serving { margin: 1rem 0 .5rem; display: flex; flex-wrap: wrap; align-items: baseline; gap: .25rem .75rem; }
+.sheet-serving .cell-value { width: 6rem; }
+.serving-label, .serving-label-text { font-size: 1.05rem; padding: .25rem .5rem; box-sizing: border-box; flex: 1 1 10rem; min-width: 0; font-family: inherit; }
+.serving-label-text { padding-left: 0; color: #5b6b7b; }
+.serving-card { min-height: 3.5rem; }
+
+/* Food list table */
+.table-wrap { overflow-x: auto; margin: 1rem 0; border: 1px solid #F3E3BF; border-radius: 16px; background: #fff; }
+.food-table { border-collapse: collapse; width: 100%; font-size: .95rem; }
+.food-table caption { text-align: left; padding: .5rem .75rem; font-size: .8rem; }
+.food-table th, .food-table td { padding: .55rem .6rem; border-top: 1px solid #F3E3BF; white-space: nowrap; text-align: left; }
+.food-table thead th { font-size: .75rem; text-transform: uppercase; letter-spacing: .03em; color: #5b6b7b; border-top: 0; border-bottom: 3px solid #F3E3BF; }
+.food-table .num { text-align: right; font-variant-numeric: tabular-nums; }
+.food-table tbody th { font-weight: 600; }
+.food-table .name-col { position: sticky; left: 0; background: #fff; min-width: 9rem; max-width: 12rem; white-space: normal; }
+.food-table a { color: #2A6F97; text-decoration: none; }
+.food-table .h-cal { border-bottom-color: #E0A526; } .food-table .h-pro { border-bottom-color: #2A6F97; }
+.food-table .h-car { border-bottom-color: #E8873A; } .food-table .h-fat { border-bottom-color: #D9564A; }
+.food-table .h-fib { border-bottom-color: #3E9E7A; } .food-table .h-sal { border-bottom-color: #8a7bc4; }
+.food-table .short { display: none; }
+@media (max-width: 600px) {
+  .food-table { font-size: .85rem; }
+  .food-table th, .food-table td { padding: .45rem .35rem; }
+  .food-table .serving-col { display: none; }
+  .food-table .long { display: none; }
+  .food-table .short { display: inline; }
+  .food-table .name-col { min-width: 6.5rem; max-width: 7.5rem; }
+  .food-table .star { min-width: 1.6rem; min-height: 1.6rem; font-size: 1.2rem; padding: 0; }
+  .cells { grid-template-columns: repeat(2, 1fr); }
+}
+.sheet-serving span.cell-value { width: auto; margin-left: 0; padding: 0; }
+main.wide { max-width: 56rem; }
+@media (max-width: 900px) { .food-table .serving-col { display: none; } }

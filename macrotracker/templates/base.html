@@ -14,7 +14,7 @@
     <a href="{{ url_for('foods.index') }}">Foods</a>
     <a href="{{ url_for('meals.index') }}">Meals</a>
   </nav>
-  <main>
+  <main class="{% block main_class %}{% endblock %}">
     {% with messages = get_flashed_messages(with_categories=true) %}
       {% for category, message in messages %}
         <p class="flash flash-{{ category }}">{{ message }}</p>

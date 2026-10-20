@@ -1,0 +1,67 @@
+{# One layout for a food, used by the detail page (editing=False) and the edit/new form (editing=True),
+   so the two look the same; the only difference is that the values are inputs when editing. #}
+{% macro nutrient(key, label, unit, css, places=1) %}
+  {% if editing %}
+    <label class="cell {{ css }}" for="{{ form[key].id }}">
+      <span class="cell-label">{{ label }}</span>
+      <span class="cell-line">{{ form[key](class_="cell-value", inputmode="decimal") }}<small>{{ unit }}</small></span>
+    </label>
+  {% else %}
+    <div class="cell {{ css }}">
+      <span class="cell-label">{{ label }}</span>
+      <span class="cell-line"><span class="cell-value">{{ food[key]|num(places) }}</span><small>{{ unit }}</small></span>
+    </div>
+  {% endif %}
+{% endmacro %}
+
+{% if editing %}
+  <label for="{{ form.name.id }}" class="sr-only">Name</label>
+  {{ form.name(class_="sheet-title", placeholder="Food name") }}
+{% else %}
+  <h1 class="sheet-title">{{ food.name }}</h1>
+{% endif %}
+
+<div class="sheet-basis">
+  Per
+  {% if editing %}
+    {{ form.basis_amount(class_="basis-input", inputmode="decimal", **{"aria-label": "Per amount"}) }}
+    {{ form.unit(class_="unit-select", **{"aria-label": "Unit"}) }}
+  {% else %}
+    {{ food.basis_amount|num(2) }} {{ food.unit }}
+  {% endif %}
+</div>
+
+<div class="cells">
+  {{ nutrient("calories_kcal", "Calories", "kcal", "cell-cal", 0) }}
+  {{ nutrient("protein_g", "Protein", "g", "cell-pro") }}
+  {{ nutrient("carbs_g", "Carbs", "g", "cell-car") }}
+  {{ nutrient("fat_g", "Fat", "g", "cell-fat") }}
+  {{ nutrient("fibre_g", "Fibre", "g", "cell-fib") }}
+  {{ nutrient("salt_g", "Salt", "g", "cell-sal", 2) }}
+</div>
+
+<div class="sheet-serving">
+  <span class="cell-label">Typical serving</span>
+  {% if editing %}
+    <span class="cell-line">
+      {{ form.serving_size(class_="cell-value", inputmode="decimal", **{"aria-label": "Serving size"}) }}
+      <small>{{ food.unit if food else "(unit above)" }}</small>
+    </span>
+    {{ form.serving_label(class_="serving-label", placeholder="Label, e.g. 1 can", **{"aria-label": "Serving label"}) }}
+  {% else %}
+    <span class="cell-line"><span class="cell-value">{{ food.serving_size|num(2) }}</span><small>{{ food.unit }}</small></span>
+    {% if food.serving_label %}<span class="serving-label-text">{{ food.serving_label }}</span>{% endif %}
+  {% endif %}
+</div>
+
+{% if editing %}
+  {% for field in form %}{% for error in field.errors %}<p class="error">{{ field.label.text }}: {{ error }}</p>{% endfor %}{% endfor %}
+{% endif %}
+
+<div id="preview" class="card serving-card" aria-live="polite">
+  {% if not editing %}
+    {% with macros = per_serving, serving_size = food.serving_size, unit = food.unit %}
+      {% include "partials/_macro_preview.html" %}
+    {% endwith %}
+  {% endif %}
+</div>

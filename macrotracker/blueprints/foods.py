@@ -17,8 +17,18 @@ FIELDS = ["name", "unit", "basis_amount", "calories_kcal", "protein_g", "carbs_g
           "fibre_g", "salt_g", "serving_size", "serving_label"]
 
 
+def _tidy(value):
+    """256.00 -> 256, 2.50 -> 2.5, so the edit inputs show the same numbers as the detail page."""
+    if value is None:
+        return value
+    return value.quantize(Decimal(1)) if value == value.to_integral() else value.normalize()
+
+
 def _make_form(food=None):
     form = FoodForm(obj=food)
+    if food is not None and request.method == "GET":
+        for field in nutrition.NUTRIENTS + ("basis_amount", "serving_size"):
+            getattr(form, field).data = _tidy(getattr(form, field).data)
     form.unit.choices = [(u, u) for u in current_app.config["UNITS"]]
     return form
 
@@ -36,19 +46,19 @@ def _copy_form_to_food(form, food):
 @bp.route("/")
 def index():
     q = request.args.get("q", "").strip()
-    foods = _search(q)
+    rows = _search(q)
     # HTMX sends this header; it only wants the list fragment, not the whole page.
     if request.headers.get("HX-Request"):
-        return render_template("partials/_food_rows.html", foods=foods, q=q)
-    return render_template("foods/list.html", foods=foods, q=q)
+        return render_template("partials/_food_rows.html", rows=rows, q=q)
+    return render_template("foods/list.html", rows=rows, q=q)
 
 
 def _search(q):
-    """Favourites first, then alphabetical."""
+    """(food, macros per typical serving) pairs: favourites first, then alphabetical."""
     query = Food.query.order_by(Food.is_favourite.desc(), Food.name)
     if q:
         query = query.filter(Food.name.ilike(f"%{q}%"))
-    return query.all()
+    return [(food, nutrition.macros_per_serving(food)) for food in query.all()]
 
 
 @bp.route("/<int:food_id>/favourite", methods=["POST"])
@@ -57,7 +67,7 @@ def favourite(food_id):
     food.is_favourite = not food.is_favourite
     db.session.commit()
     q = request.form.get("q", "").strip()
-    return render_template("partials/_food_rows.html", foods=_search(q), q=q)
+    return render_template("partials/_food_rows.html", rows=_search(q), q=q)
 
 
 @bp.route("/parse-label", methods=["POST"])

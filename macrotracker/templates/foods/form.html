@@ -1,15 +1,7 @@
 {% extends "base.html" %}
 {% block title %}{{ 'Edit' if food else 'New' }} food · Macro Tracker{% endblock %}
 {% block content %}
-  <h1>{{ 'Edit food' if food else 'New food' }}</h1>
-
-  {% macro field(f) %}
-    <div class="field">
-      <label for="{{ f.id }}">{{ f.label.text }}</label>
-      {{ f() }}
-      {% for error in f.errors %}<p class="error">{{ error }}</p>{% endfor %}
-    </div>
-  {% endmacro %}
+  {% set editing = True %}
 
   <details class="card paste">
     <summary>Paste a nutrition label to auto-fill</summary>
@@ -18,42 +10,13 @@
     <p id="label-result" class="muted" aria-live="polite"></p>
   </details>
 
-  {# Normal submit saves the food. Typing also posts the form to /preview, and HTMX swaps the reply into #preview. #}
   {# The hx- attributes sit on a div, not the form: htmx would refuse to send a form that fails browser validation (e.g. empty name). #}
   <form method="post" class="form">
     <div hx-post="{{ url_for('foods.preview') }}" hx-trigger="input delay:300ms, load" hx-target="#preview">
-    {{ form.hidden_tag() }}
-    {{ field(form.name) }}
-
-    <fieldset>
-      <legend>Nutrition values (as on the label)</legend>
-      <div class="grid grid-2">
-        {{ field(form.basis_amount) }}
-        {{ field(form.unit) }}
-      </div>
-      <div class="grid grid-3">
-        {{ field(form.calories_kcal) }}
-        {{ field(form.protein_g) }}
-        {{ field(form.carbs_g) }}
-        {{ field(form.fat_g) }}
-        {{ field(form.fibre_g) }}
-        {{ field(form.salt_g) }}
-      </div>
-    </fieldset>
-
-    <fieldset>
-      <legend>Typical serving</legend>
-      <div class="grid grid-2">
-        {{ field(form.serving_size) }}
-        {{ field(form.serving_label) }}
-      </div>
-      <p class="hint">Size is in the unit above, e.g. 105 for a 105 g can or 0.5 for half an avocado.</p>
-    </fieldset>
-
-    <div id="preview" class="card" aria-live="polite"></div>
-
-    <button type="submit" class="button">Save</button>
-    <a href="{{ url_for('foods.detail', food_id=food.id) if food else url_for('foods.index') }}">Cancel</a>
+      {{ form.hidden_tag() }}
+      {% include "foods/_sheet.html" %}
+      <button type="submit" class="button">Save</button>
+      <a href="{{ url_for('foods.detail', food_id=food.id) if food else url_for('foods.index') }}">Cancel</a>
     </div>
   </form>
   <script src="/js/food-form.js" defer></script>

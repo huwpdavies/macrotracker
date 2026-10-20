@@ -1,17 +1,18 @@
 from flask import Blueprint, render_template
 
-from ..models import Food, Goal
+from ..models import Food, Goal, Meal
 
 bp = Blueprint("dashboard", __name__)
 
 
 @bp.route("/")
 def index():
-    # Temporary Phase 2 check that the app can read the database.
-    food_count = Food.query.count()
-    active_goal = Goal.query.filter_by(is_active=True).first()
+    # Placeholder home page until the real dashboard (Phase 7).
     return render_template(
-        "dashboard/index.html", food_count=food_count, active_goal=active_goal
+        "dashboard/index.html",
+        food_count=Food.query.count(),
+        meal_count=Meal.query.count(),
+        active_goal=Goal.query.filter_by(is_active=True).first(),
     )
 
 

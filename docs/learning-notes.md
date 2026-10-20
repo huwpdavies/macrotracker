@@ -36,3 +36,8 @@
 - Changed: the food detail page and the edit form now render the same `foods/_sheet.html` (a flag, `editing`, switches text for inputs), so they look identical; the food list is a table with one column per nutrient (per typical serving).
 - Concepts: one template included from two pages with a different variable set in each (`{% set editing = True %}`); Jinja macros for repeated cells; responsive tables (`overflow-x: auto`, short headers and a hidden column on narrow screens, with `aria-hidden` on the short labels); tidying `Decimal`s for display (`256.00` -> `256`) in the route before the form renders.
 - Files to read: `macrotracker/templates/foods/_sheet.html`, `macrotracker/templates/partials/_food_rows.html`, the "Food sheet" and "Food list table" sections of `public/css/main.css`.
+
+## Full visual redesign (modern, grey and blue)
+- Changed: replaced the sandy/playful look with a clean system: light grey page, white cards, one blue accent, Inter font, one type scale and spacing scale. Top bar on desktop, bottom tab bar on phones. No per-nutrient colours (labels carry the meaning).
+- Concepts: design tokens as CSS variables in `:root`; the same `<nav>` is a top bar or a fixed bottom bar purely through a media query; component classes (`.btn`, `.card`, `.rows`, `.field`) reused across pages instead of one-off styles; a Jinja macro in `base.html` builds the nav links and marks the current page with `aria-current`; `request.blueprint` tells the template which section is active; tap targets are at least 44px and focus rings are visible.
+- Files to read: `public/css/main.css` (sections 1 to 13), `macrotracker/templates/base.html`.

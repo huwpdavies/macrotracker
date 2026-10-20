@@ -7,8 +7,10 @@
                 hx-post="{{ url_for('meals.favourite', meal_id=meal.id) }}" hx-target="#meal-list"
                 aria-label="{{ 'Remove from favourites' if meal.is_favourite else 'Add to favourites' }}"
                 title="{{ 'Unfavourite' if meal.is_favourite else 'Favourite' }}">{{ '★' if meal.is_favourite else '☆' }}</button>
-        <a href="{{ url_for('meals.detail', meal_id=meal.id) }}" class="grow"><strong>{{ meal.name }}</strong></a>
-        <span class="muted">{{ ps.calories_kcal|num(0) }} kcal · {{ ps.protein_g|num }} g protein</span>
+        <div class="grow">
+          <a href="{{ url_for('meals.detail', meal_id=meal.id) }}" class="row-title">{{ meal.name }}</a>
+          <span class="row-meta">{{ ps.calories_kcal|num(0) }} kcal · {{ ps.protein_g|num }} g protein</span>
+        </div>
       </li>
     {% endfor %}
   </ul>

@@ -135,7 +135,8 @@ def edit(meal_id):
         db.session.rollback()
         return _form_page(form, meal, _rows_from_form())
     form = MealForm(obj=meal)
-    rows = [{"food_id": str(i.food_id), "amount": str(i.quantity.normalize()), "mode": "amount"}
+    form.servings.data = nutrition.tidy(form.servings.data)
+    rows = [{"food_id": str(i.food_id), "amount": str(nutrition.tidy(i.quantity)), "mode": "amount"}
             for i in meal.items]
     return _form_page(form, meal, rows)
 

@@ -43,3 +43,10 @@ def divide_macros(macros, divisor):
 def total_for_items(items):
     """Total nutrition for items that each have a `food` and a `quantity` (in the food's unit)."""
     return add_macros(macros_for(item.food, item.quantity) for item in items)
+
+
+def tidy(value):
+    """256.00 -> 256, 2.50 -> 2.5, so edit inputs show the same numbers as the detail pages."""
+    if value is None:
+        return value
+    return value.quantize(Decimal(1)) if value == value.to_integral() else value.normalize()

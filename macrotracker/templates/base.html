@@ -2,22 +2,38 @@
 <html lang="en">
 <head>
   <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
   <meta name="robots" content="noindex">
+  <meta name="theme-color" content="#F4F5F7">
   <title>{% block title %}Macro Tracker{% endblock %}</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap">
   <link rel="stylesheet" href="/css/main.css">
   <script src="/js/htmx.min.js" defer></script>
 </head>
 <body hx-headers='{"X-CSRFToken": "{{ csrf_token() }}"}'>
-  <nav class="nav">
-    <a href="{{ url_for('dashboard.index') }}">Home</a>
-    <a href="{{ url_for('foods.index') }}">Foods</a>
-    <a href="{{ url_for('meals.index') }}">Meals</a>
-  </nav>
+  {% macro tab(endpoint, section, label, icon) %}
+    <a class="tab" href="{{ url_for(endpoint) }}" {% if request.blueprint == section %}aria-current="page"{% endif %}>
+      <svg viewBox="0 0 24 24" aria-hidden="true">{{ icon|safe }}</svg>{{ label }}
+    </a>
+  {% endmacro %}
+
+  <header class="topbar">
+    <div class="topbar-inner">
+      <a class="brand" href="{{ url_for('dashboard.index') }}">Macro<span>Tracker</span></a>
+      <nav class="tabs" aria-label="Main">
+        {{ tab("dashboard.index", "dashboard", "Home", '<path d="M3 11l9-8 9 8"/><path d="M5 10v10h14V10"/>') }}
+        {{ tab("foods.index", "foods", "Foods", '<path d="M12 7c-4-3-9 0-8 6 1 5 4 8 8 6 4 2 7-1 8-6 1-6-4-9-8-6z"/><path d="M12 7c0-2 1-4 3-5"/>') }}
+        {{ tab("meals.index", "meals", "Meals", '<path d="M3 12h18a9 9 0 0 1-18 0z"/><path d="M8 8c0-1 1-1 1-2M12 8c0-1 1-1 1-2M16 8c0-1 1-1 1-2"/>') }}
+      </nav>
+    </div>
+  </header>
+
   <main class="{% block main_class %}{% endblock %}">
     {% with messages = get_flashed_messages(with_categories=true) %}
       {% for category, message in messages %}
-        <p class="flash flash-{{ category }}">{{ message }}</p>
+        <p class="flash flash-{{ category }}" role="status">{{ message }}</p>
       {% endfor %}
     {% endwith %}
     {% block content %}{% endblock %}

@@ -12,7 +12,7 @@
          inputmode="decimal" aria-label="Amount" class="item-amount">
   <select name="item_mode" aria-label="Amount is in" class="item-mode">
     <option value="servings" {{ 'selected' if row.mode == 'servings' }}>servings</option>
-    <option value="amount" {{ 'selected' if row.mode == 'amount' }}>amount (food's unit)</option>
+    <option value="amount" {{ 'selected' if row.mode == 'amount' }}>amount</option>
   </select>
   <button type="button" class="icon-btn" aria-label="Remove ingredient" title="Remove"
           hx-on:click="var d = this.closest('#meal-fields'); this.closest('.item-row').remove(); htmx.trigger(d, 'input');">✕</button>

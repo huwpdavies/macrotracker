@@ -17,18 +17,11 @@ FIELDS = ["name", "unit", "basis_amount", "calories_kcal", "protein_g", "carbs_g
           "fibre_g", "salt_g", "serving_size", "serving_label"]
 
 
-def _tidy(value):
-    """256.00 -> 256, 2.50 -> 2.5, so the edit inputs show the same numbers as the detail page."""
-    if value is None:
-        return value
-    return value.quantize(Decimal(1)) if value == value.to_integral() else value.normalize()
-
-
 def _make_form(food=None):
     form = FoodForm(obj=food)
     if food is not None and request.method == "GET":
         for field in nutrition.NUTRIENTS + ("basis_amount", "serving_size"):
-            getattr(form, field).data = _tidy(getattr(form, field).data)
+            getattr(form, field).data = nutrition.tidy(getattr(form, field).data)
     form.unit.choices = [(u, u) for u in current_app.config["UNITS"]]
     return form
 

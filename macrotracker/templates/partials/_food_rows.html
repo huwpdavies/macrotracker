@@ -18,12 +18,14 @@
         {% for food, m in rows %}
           <tr>
             <th scope="row" class="name-col">
+              <div class="name-cell">
               <button type="button" class="star{{ ' on' if food.is_favourite }}"
                       hx-post="{{ url_for('foods.favourite', food_id=food.id) }}"
                       hx-include="[name=q]" hx-target="#food-list"
                       aria-label="{{ 'Remove from favourites' if food.is_favourite else 'Add to favourites' }}"
                       title="{{ 'Unfavourite' if food.is_favourite else 'Favourite' }}">{{ '★' if food.is_favourite else '☆' }}</button>
               <a href="{{ url_for('foods.detail', food_id=food.id) }}">{{ food.name }}</a>
+              </div>
             </th>
             <td class="muted serving-col">{{ food.serving_label or (food.serving_size|num ~ ' ' ~ food.unit) }}</td>
             <td class="num">{{ m.calories_kcal|num(0) }}</td>

@@ -1,6 +1,12 @@
 {% extends "base.html" %}
 {% block content %}
-  <h1>Hello, Macro Tracker! 🏖️</h1>
-  <p>The skeleton is alive.</p>
-  <p>Database check: {{ food_count }} foods, active goal: {{ active_goal.name if active_goal else "none" }}.</p>
+  <div class="page-head"><h1>Macro Tracker</h1></div>
+  <p class="muted">Track your daily protein, carbs, fat, fibre and salt against a goal.</p>
+
+  <div class="home-grid">
+    <a class="home-tile" href="{{ url_for('foods.index') }}"><strong>{{ food_count }}</strong><span>Foods</span></a>
+    <a class="home-tile" href="{{ url_for('meals.index') }}"><strong>{{ meal_count }}</strong><span>Meals</span></a>
+  </div>
+
+  <p class="hint">Active goal: {{ active_goal.name if active_goal else "none yet" }}. The daily dashboard arrives in a later phase.</p>
 {% endblock %}

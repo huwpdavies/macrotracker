@@ -1,9 +1,11 @@
 {% extends "base.html" %}
 {% block title %}Meals · Macro Tracker{% endblock %}
 {% block content %}
-  <h1>Meals</h1>
-  <p><a class="button" href="{{ url_for('meals.new') }}">+ New meal</a></p>
-  <p class="muted">Calories and protein shown are per serving.</p>
+  <div class="page-head">
+    <h1>Meals</h1>
+    <a class="btn btn-primary" href="{{ url_for('meals.new') }}">New meal</a>
+  </div>
+  <p class="muted">Calories and protein are per serving.</p>
   <div id="meal-list">
     {% include "partials/_meal_rows.html" %}
   </div>

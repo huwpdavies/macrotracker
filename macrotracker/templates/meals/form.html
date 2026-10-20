@@ -1,7 +1,8 @@
 {% extends "base.html" %}
 {% block title %}{{ 'Edit' if meal else 'New' }} meal · Macro Tracker{% endblock %}
 {% block content %}
-  <h1>{{ 'Edit meal' if meal else 'New meal' }}</h1>
+  <a class="back" href="{{ url_for('meals.detail', meal_id=meal.id) if meal else url_for('meals.index') }}">← {{ 'Cancel' if meal else 'Meals' }}</a>
+  <h1 class="sheet-title">{{ 'Edit meal' if meal else 'New meal' }}</h1>
 
   {% macro field(f) %}
     <div class="field">
@@ -28,15 +29,17 @@
       <div id="item-rows">
         {% for row in rows %}{% include "partials/_meal_item_row.html" %}{% endfor %}
       </div>
-      <button type="button" class="button ghost"
+      <button type="button" class="btn btn-secondary"
               hx-get="{{ url_for('meals.row') }}" hx-target="#item-rows" hx-swap="beforeend">+ Add ingredient</button>
-      <p class="hint">Enter servings (the food's typical serving) or switch to an exact amount in the food's unit.</p>
+      <p class="hint">Enter servings (the food's typical serving) or switch to "amount" for an exact quantity in the food's own unit (g, ml, unit…).</p>
     </fieldset>
 
     <div id="totals" class="card" aria-live="polite"></div>
 
-    <button type="submit" class="button">Save</button>
-    <a href="{{ url_for('meals.detail', meal_id=meal.id) if meal else url_for('meals.index') }}">Cancel</a>
+    <div class="actions">
+      <button type="submit" class="btn btn-primary">Save</button>
+      <a class="btn btn-secondary" href="{{ url_for('meals.detail', meal_id=meal.id) if meal else url_for('meals.index') }}">Cancel</a>
+    </div>
     </div>
   </form>
 {% endblock %}

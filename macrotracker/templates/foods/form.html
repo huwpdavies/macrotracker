@@ -2,6 +2,7 @@
 {% block title %}{{ 'Edit' if food else 'New' }} food · Macro Tracker{% endblock %}
 {% block content %}
   {% set editing = True %}
+  <a class="back" href="{{ url_for('foods.detail', food_id=food.id) if food else url_for('foods.index') }}">← {{ 'Cancel' if food else 'Foods' }}</a>
 
   <details class="card paste">
     <summary>Paste a nutrition label to auto-fill</summary>
@@ -15,8 +16,10 @@
     <div hx-post="{{ url_for('foods.preview') }}" hx-trigger="input delay:300ms, load" hx-target="#preview">
       {{ form.hidden_tag() }}
       {% include "foods/_sheet.html" %}
-      <button type="submit" class="button">Save</button>
-      <a href="{{ url_for('foods.detail', food_id=food.id) if food else url_for('foods.index') }}">Cancel</a>
+      <div class="actions">
+        <button type="submit" class="btn btn-primary">Save</button>
+        <a class="btn btn-secondary" href="{{ url_for('foods.detail', food_id=food.id) if food else url_for('foods.index') }}">Cancel</a>
+      </div>
     </div>
   </form>
   <script src="/js/food-form.js" defer></script>

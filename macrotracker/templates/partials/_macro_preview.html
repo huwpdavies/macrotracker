@@ -1,0 +1,6 @@
+{% if macros %}
+  <strong>Per serving ({{ serving_size|num(2) }} {{ unit }}):</strong>
+  {% include "partials/_nutrient_chips.html" %}
+{% else %}
+  <span class="muted">Enter "per" and serving amounts to preview one serving.</span>
+{% endif %}

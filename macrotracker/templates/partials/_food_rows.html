@@ -1,0 +1,19 @@
+{% if foods %}
+  <ul class="rows">
+    {% for food in foods %}
+      <li>
+        <button type="button" class="star{{ ' on' if food.is_favourite }}"
+                hx-post="{{ url_for('foods.favourite', food_id=food.id) }}"
+                hx-include="[name=q]" hx-target="#food-list"
+                aria-label="{{ 'Remove from favourites' if food.is_favourite else 'Add to favourites' }}"
+                title="{{ 'Unfavourite' if food.is_favourite else 'Favourite' }}">{{ '★' if food.is_favourite else '☆' }}</button>
+        <a href="{{ url_for('foods.detail', food_id=food.id) }}" class="grow"><strong>{{ food.name }}</strong></a>
+        <span class="muted">{{ food.serving_label or (food.serving_size|num ~ ' ' ~ food.unit) }}</span>
+      </li>
+    {% endfor %}
+  </ul>
+{% elif q %}
+  <p class="muted">No foods match "{{ q }}".</p>
+{% else %}
+  <p class="muted">No foods yet. <a href="{{ url_for('foods.new') }}">Add your first food</a>.</p>
+{% endif %}

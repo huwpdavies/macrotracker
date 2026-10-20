@@ -33,3 +33,10 @@ legend { font-weight: 700; padding: 0 .4rem; }
 .grow { flex: 1; }
 .star { background: none; border: 0; font-size: 1.4rem; line-height: 1; cursor: pointer; color: #8a6d1f; padding: 0 .25rem; min-width: 2.25rem; min-height: 2.25rem; }
 .star.on { color: #c98a00; }
+.item-row { display: flex; flex-wrap: wrap; gap: .4rem; align-items: center; margin-bottom: .6rem; padding-bottom: .6rem; border-bottom: 1px dashed #F3E3BF; }
+.item-row select, .item-row input { padding: .55rem; font: inherit; border: 1px solid #F3E3BF; border-radius: 12px; box-sizing: border-box; }
+.item-food { flex: 1 1 100%; }
+.item-amount { flex: 1 1 5rem; min-width: 0; }
+.item-mode { flex: 2 1 8rem; min-width: 0; }
+.icon-btn { background: none; border: 0; font-size: 1.1rem; cursor: pointer; min-width: 2.25rem; min-height: 2.25rem; color: #2B3A4A; }
+.button.ghost { background: #DFF3FA; color: #2A6F97; }

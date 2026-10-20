@@ -47,6 +47,8 @@ class Meal(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.String(200), nullable=False)
     notes = db.Column(db.Text)
+    # How many servings the whole recipe makes (totals are divided by this for one serving).
+    servings = db.Column(db.Numeric(8, 2), nullable=False, default=1, server_default=text("1"))
     is_favourite = _favourite_column()
     created_at = db.Column(db.DateTime(timezone=True), default=_now)
     updated_at = db.Column(db.DateTime(timezone=True), default=_now, onupdate=_now)

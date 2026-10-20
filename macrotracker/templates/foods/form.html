@@ -19,9 +19,9 @@
   </details>
 
   {# Normal submit saves the food. Typing also posts the form to /preview, and HTMX swaps the reply into #preview. #}
-  <form method="post" class="form"
-        hx-post="{{ url_for('foods.preview') }}" hx-trigger="input changed delay:300ms, load"
-        hx-target="#preview">
+  {# The hx- attributes sit on a div, not the form: htmx would refuse to send a form that fails browser validation (e.g. empty name). #}
+  <form method="post" class="form">
+    <div hx-post="{{ url_for('foods.preview') }}" hx-trigger="input delay:300ms, load" hx-target="#preview">
     {{ form.hidden_tag() }}
     {{ field(form.name) }}
 
@@ -54,6 +54,7 @@
 
     <button type="submit" class="button">Save</button>
     <a href="{{ url_for('foods.detail', food_id=food.id) if food else url_for('foods.index') }}">Cancel</a>
+    </div>
   </form>
   <script src="/js/food-form.js" defer></script>
 {% endblock %}

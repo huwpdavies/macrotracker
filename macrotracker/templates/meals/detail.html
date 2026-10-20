@@ -1,0 +1,34 @@
+{% extends "base.html" %}
+{% block title %}{{ meal.name }} · Macro Tracker{% endblock %}
+{% block content %}
+  <h1>{{ meal.name }}</h1>
+  {% if meal.notes %}<p class="muted">{{ meal.notes }}</p>{% endif %}
+
+  <h2>Ingredients</h2>
+  <ul class="rows">
+    {% for item, macros in lines %}
+      <li>
+        <a href="{{ url_for('foods.detail', food_id=item.food.id) }}" class="grow">{{ item.food.name }}</a>
+        <span>{{ item.quantity|num(2) }} {{ item.food.unit }}</span>
+        <span class="muted">{{ macros.calories_kcal|num(0) }} kcal</span>
+      </li>
+    {% endfor %}
+  </ul>
+
+  <h2>Whole recipe</h2>
+  {% with macros = total %}{% include "partials/_nutrient_chips.html" %}{% endwith %}
+  {% if meal.servings != 1 %}
+    <h2>Per serving (1 of {{ meal.servings|num(2) }})</h2>
+    {% with macros = per_serving %}{% include "partials/_nutrient_chips.html" %}{% endwith %}
+  {% endif %}
+
+  <p>
+    <a class="button" href="{{ url_for('meals.edit', meal_id=meal.id) }}">Edit</a>
+    <form method="post" action="{{ url_for('meals.delete', meal_id=meal.id) }}" class="inline"
+          onsubmit="return confirm('Delete {{ meal.name|replace("'", "") }}?')">
+      <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+      <button type="submit" class="button danger">Delete</button>
+    </form>
+  </p>
+  <p><a href="{{ url_for('meals.index') }}">← All meals</a></p>
+{% endblock %}

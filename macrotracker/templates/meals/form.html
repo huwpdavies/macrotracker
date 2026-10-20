@@ -1,0 +1,42 @@
+{% extends "base.html" %}
+{% block title %}{{ 'Edit' if meal else 'New' }} meal · Macro Tracker{% endblock %}
+{% block content %}
+  <h1>{{ 'Edit meal' if meal else 'New meal' }}</h1>
+
+  {% macro field(f) %}
+    <div class="field">
+      <label for="{{ f.id }}">{{ f.label.text }}</label>
+      {{ f() }}
+      {% for error in f.errors %}<p class="error">{{ error }}</p>{% endfor %}
+    </div>
+  {% endmacro %}
+
+  {# Typing posts the form to /preview and HTMX swaps the reply into #totals. Save is a normal submit. #}
+  {# The hx- attributes sit on a div, not the form: htmx would refuse to send a form that fails browser validation. #}
+  <form method="post" class="form">
+    <div id="meal-fields" hx-post="{{ url_for('meals.preview') }}" hx-trigger="input delay:300ms, load"
+         hx-target="#totals">
+    {{ form.hidden_tag() }}
+    <div class="grid grid-2">
+      {{ field(form.name) }}
+      {{ field(form.servings) }}
+    </div>
+    {{ field(form.notes) }}
+
+    <fieldset>
+      <legend>Ingredients</legend>
+      <div id="item-rows">
+        {% for row in rows %}{% include "partials/_meal_item_row.html" %}{% endfor %}
+      </div>
+      <button type="button" class="button ghost"
+              hx-get="{{ url_for('meals.row') }}" hx-target="#item-rows" hx-swap="beforeend">+ Add ingredient</button>
+      <p class="hint">Enter servings (the food's typical serving) or switch to an exact amount in the food's unit.</p>
+    </fieldset>
+
+    <div id="totals" class="card" aria-live="polite"></div>
+
+    <button type="submit" class="button">Save</button>
+    <a href="{{ url_for('meals.detail', meal_id=meal.id) if meal else url_for('meals.index') }}">Cancel</a>
+    </div>
+  </form>
+{% endblock %}

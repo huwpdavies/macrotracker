@@ -24,3 +24,22 @@ def quantity_from_servings(food, servings):
 
 def macros_per_serving(food):
     return macros_for(food, food.serving_size)
+
+
+def add_macros(parts):
+    """Sum several {nutrient: value} dicts."""
+    total = {n: Decimal(0) for n in NUTRIENTS}
+    for part in parts:
+        for n in NUTRIENTS:
+            total[n] += part[n]
+    return total
+
+
+def divide_macros(macros, divisor):
+    divisor = Decimal(divisor)
+    return {n: value / divisor for n, value in macros.items()}
+
+
+def total_for_items(items):
+    """Total nutrition for items that each have a `food` and a `quantity` (in the food's unit)."""
+    return add_macros(macros_for(item.food, item.quantity) for item in items)

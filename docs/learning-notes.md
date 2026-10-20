@@ -26,3 +26,8 @@
 - Changed: calories are typed from the label and stored (`calories_kcal` on foods, goals, log entries); brand removed; favourite stars on foods (and a column on meals for Phase 4); paste-a-label autofill; compact form layout.
 - Concepts: a migration can change existing data too (we backfilled calories with `op.execute`); `server_default` lets a NOT NULL column be added to a table that already has rows; pure-Python parsing in `services/label_parser.py` is easy to test, while a small JS file just copies the result into the inputs; `hx-headers` on `<body>` sends the CSRF token with every HTMX POST.
 - Files to read: `macrotracker/services/label_parser.py`, `public/js/food-form.js`, `macrotracker/templates/foods/form.html`, `migrations/versions/03d1e472b24e_*.py`.
+
+## Phase 4: Meals
+- Built: meal list/detail/create/edit/delete, ingredient rows you add and remove without a page reload, live totals and per-serving totals, favourite stars, `servings` column on meals.
+- Concepts: one-to-many (`meal.items`, `item.food`; `cascade="all, delete-orphan"` removes items with their meal); a variable number of form rows is read with `request.form.getlist()` instead of a WTForms FieldList (plainer); HTMX partials (`/meals/row` returns one row, `/meals/preview` returns totals); `{% include %}` reuses the row and nutrient-chip fragments; htmx won't send a `<form>` that fails browser validation, so the `hx-` attributes sit on a wrapper div; an app-level check (food in a meal?) gives a friendly message and the foreign key is the safety net.
+- Files to read: `macrotracker/blueprints/meals.py`, `macrotracker/templates/meals/form.html`, `macrotracker/templates/partials/_meal_item_row.html`, `macrotracker/services/nutrition.py`.

@@ -7,7 +7,7 @@ from sqlalchemy.exc import IntegrityError
 
 from ..extensions import db
 from ..forms import FoodForm
-from ..models import Food
+from ..models import Food, MealItem
 from ..services import nutrition
 from ..services.label_parser import parse_label
 
@@ -105,11 +105,16 @@ def edit(food_id):
 @bp.route("/<int:food_id>/delete", methods=["POST"])
 def delete(food_id):
     food = db.get_or_404(Food, food_id)
+    in_use = MealItem.query.filter_by(food_id=food_id).first() is not None
     try:
-        db.session.delete(food)
-        db.session.commit()
+        if not in_use:
+            db.session.delete(food)
+            db.session.commit()
     except IntegrityError:
         db.session.rollback()
+        in_use = True
+    if in_use:
+        # The check above is the friendly path; the database foreign key is the safety net.
         flash(f"{food.name} is used in a meal, so it can't be deleted yet.", "error")
         return redirect(url_for("foods.detail", food_id=food_id))
     flash(f"Deleted {food.name}.", "success")

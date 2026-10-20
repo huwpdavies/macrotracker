@@ -24,10 +24,11 @@ class Config:
     SQLALCHEMY_TRACK_MODIFICATIONS = False
     # Serverless: open a connection per use and let Supabase's pooler do the pooling.
     # prepare_threshold=None turns off prepared statements, which the pooler doesn't support.
-    SQLALCHEMY_ENGINE_OPTIONS = {
-        "poolclass": NullPool,
-        "connect_args": {"prepare_threshold": None},
-    }
+    SQLALCHEMY_ENGINE_OPTIONS = (
+        {"poolclass": NullPool, "connect_args": {"prepare_threshold": None}}
+        if SQLALCHEMY_DATABASE_URI.startswith("postgresql")
+        else {}
+    )
 
 
 class TestConfig(Config):

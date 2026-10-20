@@ -1,7 +1,7 @@
 from decimal import Decimal, InvalidOperation
 from types import SimpleNamespace
 
-from flask import (Blueprint, abort, current_app, flash, redirect,
+from flask import (Blueprint, current_app, flash, jsonify, redirect,
                    render_template, request, url_for)
 from sqlalchemy.exc import IntegrityError
 
@@ -9,11 +9,12 @@ from ..extensions import db
 from ..forms import FoodForm
 from ..models import Food
 from ..services import nutrition
+from ..services.label_parser import parse_label
 
 bp = Blueprint("foods", __name__, url_prefix="/foods")
 
-FIELDS = ["name", "brand", "unit", "basis_amount", "protein_g", "carbs_g", "fat_g",
-          "salt_g", "fibre_g", "serving_size", "serving_label"]
+FIELDS = ["name", "unit", "basis_amount", "calories_kcal", "protein_g", "carbs_g", "fat_g",
+          "fibre_g", "salt_g", "serving_size", "serving_label"]
 
 
 def _make_form(food=None):
@@ -25,9 +26,9 @@ def _make_form(food=None):
 def _copy_form_to_food(form, food):
     for field in FIELDS:
         value = getattr(form, field).data
-        if field.endswith("_g") and value is None:
-            value = 0  # blank macro box means zero
-        if field in ("brand", "serving_label") and not value:
+        if (field.endswith("_g") or field == "calories_kcal") and value is None:
+            value = 0  # blank nutrient box means zero
+        if field == "serving_label" and not value:
             value = None
         setattr(food, field, value)
 
@@ -35,14 +36,35 @@ def _copy_form_to_food(form, food):
 @bp.route("/")
 def index():
     q = request.args.get("q", "").strip()
-    query = Food.query.order_by(Food.name)
-    if q:
-        query = query.filter(Food.name.ilike(f"%{q}%") | Food.brand.ilike(f"%{q}%"))
-    foods = query.all()
+    foods = _search(q)
     # HTMX sends this header; it only wants the list fragment, not the whole page.
     if request.headers.get("HX-Request"):
         return render_template("partials/_food_rows.html", foods=foods, q=q)
     return render_template("foods/list.html", foods=foods, q=q)
+
+
+def _search(q):
+    """Favourites first, then alphabetical."""
+    query = Food.query.order_by(Food.is_favourite.desc(), Food.name)
+    if q:
+        query = query.filter(Food.name.ilike(f"%{q}%"))
+    return query.all()
+
+
+@bp.route("/<int:food_id>/favourite", methods=["POST"])
+def favourite(food_id):
+    food = db.get_or_404(Food, food_id)
+    food.is_favourite = not food.is_favourite
+    db.session.commit()
+    q = request.form.get("q", "").strip()
+    return render_template("partials/_food_rows.html", foods=_search(q), q=q)
+
+
+@bp.route("/parse-label", methods=["POST"])
+def parse_label_text():
+    """Fill the form from pasted label text. The browser sets the fields from this JSON."""
+    text = (request.get_json(silent=True) or {}).get("text", "")
+    return jsonify(parse_label(text))
 
 
 @bp.route("/new", methods=["GET", "POST"])
@@ -105,7 +127,7 @@ def _dec(value):
 def preview():
     """HTMX fragment: macros per typical serving, recalculated as the form changes."""
     stand_in = SimpleNamespace(
-        **{f: _dec(request.form.get(f)) for f in nutrition.MACROS},
+        **{f: _dec(request.form.get(f)) for f in nutrition.NUTRIENTS},
         basis_amount=_dec(request.form.get("basis_amount")),
         serving_size=_dec(request.form.get("serving_size")),
     )
@@ -114,7 +136,6 @@ def preview():
     return render_template(
         "partials/_macro_preview.html",
         macros=nutrition.macros_per_serving(stand_in),
-        calories=nutrition.calories(nutrition.macros_per_serving(stand_in)),
         unit=request.form.get("unit", ""),
         serving_size=stand_in.serving_size,
     )

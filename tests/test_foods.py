@@ -5,7 +5,7 @@ from macrotracker.config import TestConfig
 from macrotracker.extensions import db
 from macrotracker.models import Food
 
-FORM = {"name": "Tesco tuna 105g can", "unit": "g", "basis_amount": "100", "protein_g": "25",
+FORM = {"name": "Tesco tuna 105g can", "unit": "g", "basis_amount": "100", "calories_kcal": "110", "protein_g": "25",
         "carbs_g": "0", "fat_g": "1", "salt_g": "1", "fibre_g": "0", "serving_size": "105",
         "serving_label": "1 can"}
 
@@ -51,3 +51,19 @@ def test_search_returns_fragment_for_htmx(client):
 def test_preview_fragment(client):
     resp = client.post("/foods/preview", data=FORM)
     assert b"26.3 g" in resp.data
+
+
+def test_favourite_toggle_and_sort(client):
+    client.post("/foods/new", data={**FORM, "name": "Apple"})
+    client.post("/foods/new", data={**FORM, "name": "Zucchini"})
+    resp = client.post("/foods/2/favourite", data={"q": ""})
+    assert resp.data.index(b"Zucchini") < resp.data.index(b"Apple")
+    assert db.session.get(Food, 2).is_favourite is True
+
+
+def test_parse_label_endpoint(client):
+    text = "Per 100g\nEnergy 1046kJ / 250kcal\nFat 10g\nCarbohydrate 5g\nProtein 30g\nSalt 1.2g"
+    resp = client.post("/foods/parse-label", json={"text": text})
+    assert resp.json["values"]["calories_kcal"] == 250
+    assert resp.json["values"]["salt_g"] == 1.2
+    assert resp.json["missing"] == ["fibre_g"]

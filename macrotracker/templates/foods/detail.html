@@ -2,22 +2,12 @@
 {% block title %}{{ food.name }} · Macro Tracker{% endblock %}
 {% block content %}
   <h1>{{ food.name }}</h1>
-  {% if food.brand %}<p class="muted">{{ food.brand }}</p>{% endif %}
 
-  {% macro macro_table(title, m) %}
-    <h2>{{ title }}</h2>
-    <ul class="chips">
-      <li>Protein {{ m.protein_g|num }} g</li>
-      <li>Carbs {{ m.carbs_g|num }} g</li>
-      <li>Fat {{ m.fat_g|num }} g</li>
-      <li>Salt {{ m.salt_g|num(2) }} g</li>
-      <li>Fibre {{ m.fibre_g|num }} g</li>
-      <li>{{ (m.protein_g * 4 + m.carbs_g * 4 + m.fat_g * 9)|num(0) }} kcal</li>
-    </ul>
-  {% endmacro %}
+  <h2>Per {{ food.basis_amount|num(2) }} {{ food.unit }}</h2>
+  {% with macros = per_basis %}{% include "partials/_nutrient_chips.html" %}{% endwith %}
 
-  {{ macro_table("Per " ~ (food.basis_amount|num(2)) ~ " " ~ food.unit, per_basis) }}
-  {{ macro_table("Per serving (" ~ (food.serving_label or (food.serving_size|num(2) ~ " " ~ food.unit)) ~ ")", per_serving) }}
+  <h2>Per serving ({{ food.serving_label or (food.serving_size|num(2) ~ " " ~ food.unit) }})</h2>
+  {% with macros = per_serving %}{% include "partials/_nutrient_chips.html" %}{% endwith %}
 
   <p>
     <a class="button" href="{{ url_for('foods.edit', food_id=food.id) }}">Edit</a>

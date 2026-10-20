@@ -1,13 +1,6 @@
 {% if macros %}
-  <h3>Per serving ({{ serving_size|num(2) }} {{ unit }})</h3>
-  <ul class="chips">
-    <li>Protein {{ macros.protein_g|num }} g</li>
-    <li>Carbs {{ macros.carbs_g|num }} g</li>
-    <li>Fat {{ macros.fat_g|num }} g</li>
-    <li>Salt {{ macros.salt_g|num(2) }} g</li>
-    <li>Fibre {{ macros.fibre_g|num }} g</li>
-    <li>{{ calories|num(0) }} kcal</li>
-  </ul>
+  <strong>Per serving ({{ serving_size|num(2) }} {{ unit }}):</strong>
+  {% include "partials/_nutrient_chips.html" %}
 {% else %}
-  <p class="muted">Enter a serving size and "per" amount to see macros per serving.</p>
+  <span class="muted">Enter "per" and serving amounts to preview one serving.</span>
 {% endif %}

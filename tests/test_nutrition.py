@@ -4,9 +4,9 @@ from types import SimpleNamespace
 from macrotracker.services import nutrition
 
 TUNA = SimpleNamespace(basis_amount=100, serving_size=105, protein_g=25, carbs_g=0,
-                       fat_g=1, salt_g=1, fibre_g=0)
+                       fat_g=1, salt_g=1, fibre_g=0, calories_kcal=110)
 AVOCADO = SimpleNamespace(basis_amount=1, serving_size=Decimal("0.5"), protein_g=2, carbs_g=12,
-                          fat_g=22, salt_g=0, fibre_g=10)
+                          fat_g=22, salt_g=0, fibre_g=10, calories_kcal=250)
 
 
 def test_tuna_can_serving():
@@ -26,6 +26,6 @@ def test_quantity_from_servings():
     assert nutrition.quantity_from_servings(AVOCADO, 1) == Decimal("0.5")
 
 
-def test_calories_derived():
-    assert nutrition.calories({"protein_g": 10, "carbs_g": 10, "fat_g": 10,
-                               "salt_g": 0, "fibre_g": 0}) == 170
+def test_calories_scale_with_serving():
+    assert nutrition.macros_per_serving(TUNA)["calories_kcal"] == Decimal("115.5")
+    assert nutrition.macros_per_serving(AVOCADO)["calories_kcal"] == 125

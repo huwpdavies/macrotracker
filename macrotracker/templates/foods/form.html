@@ -1,12 +1,22 @@
 {% extends "base.html" %}
 {% block title %}{{ 'Edit' if food else 'New' }} food · Macro Tracker{% endblock %}
 {% block content %}
-  <h1>{{ 'Edit ' ~ food.name if food else 'New food' }}</h1>
+  <h1>{{ 'Edit food' if food else 'New food' }}</h1>
 
   {% macro field(f) %}
-    <label>{{ f.label.text }} {{ f() }}</label>
-    {% for error in f.errors %}<p class="error">{{ error }}</p>{% endfor %}
+    <div class="field">
+      <label for="{{ f.id }}">{{ f.label.text }}</label>
+      {{ f() }}
+      {% for error in f.errors %}<p class="error">{{ error }}</p>{% endfor %}
+    </div>
   {% endmacro %}
+
+  <details class="card paste">
+    <summary>Paste a nutrition label to auto-fill</summary>
+    <textarea id="label-text" rows="4" data-url="{{ url_for('foods.parse_label_text') }}"
+              placeholder="Paste the nutrition table text from a supermarket page…"></textarea>
+    <p id="label-result" class="muted" aria-live="polite"></p>
+  </details>
 
   {# Normal submit saves the food. Typing also posts the form to /preview, and HTMX swaps the reply into #preview. #}
   <form method="post" class="form"
@@ -14,22 +24,36 @@
         hx-target="#preview">
     {{ form.hidden_tag() }}
     {{ field(form.name) }}
-    {{ field(form.brand) }}
-    {{ field(form.unit) }}
-    {{ field(form.basis_amount) }}
-    <p class="muted">Enter the label values for that amount (e.g. per 100 g).</p>
-    {{ field(form.protein_g) }}
-    {{ field(form.carbs_g) }}
-    {{ field(form.fat_g) }}
-    {{ field(form.salt_g) }}
-    {{ field(form.fibre_g) }}
-    {{ field(form.serving_size) }}
-    <p class="muted">In the unit above, e.g. 105 for a 105 g can, or 0.5 for half an avocado.</p>
-    {{ field(form.serving_label) }}
 
-    <div id="preview" class="card"></div>
+    <fieldset>
+      <legend>Nutrition values (as on the label)</legend>
+      <div class="grid grid-2">
+        {{ field(form.basis_amount) }}
+        {{ field(form.unit) }}
+      </div>
+      <div class="grid grid-3">
+        {{ field(form.calories_kcal) }}
+        {{ field(form.protein_g) }}
+        {{ field(form.carbs_g) }}
+        {{ field(form.fat_g) }}
+        {{ field(form.fibre_g) }}
+        {{ field(form.salt_g) }}
+      </div>
+    </fieldset>
+
+    <fieldset>
+      <legend>Typical serving</legend>
+      <div class="grid grid-2">
+        {{ field(form.serving_size) }}
+        {{ field(form.serving_label) }}
+      </div>
+      <p class="hint">Size is in the unit above, e.g. 105 for a 105 g can or 0.5 for half an avocado.</p>
+    </fieldset>
+
+    <div id="preview" class="card" aria-live="polite"></div>
 
     <button type="submit" class="button">Save</button>
     <a href="{{ url_for('foods.detail', food_id=food.id) if food else url_for('foods.index') }}">Cancel</a>
   </form>
+  <script src="/js/food-form.js" defer></script>
 {% endblock %}

@@ -1,18 +1,35 @@
-{# The day's log entries. Expects `entries` and `empty_text`. Shared by the dashboard and the log page. #}
+{# The day's log entries as a nutrient table, with a total row. Expects `entries`, `totals` and `empty_text`.
+   Shared by the dashboard and the log page. Same columns as the food list. Tapping a name opens it to edit. #}
+{% from "partials/_table_macros.html" import nutrient_headers, nutrient_cells %}
 {% if entries %}
-  <ul class="list">
-    {% for entry in entries %}
-      <li>
-        <div class="grow">
-          <span class="row-title">{{ entry.description }}</span>
-          <span class="row-meta">{{ entry.quantity|num(2) }} {{ entry.unit }}{% if entry.meal_name %} · {{ entry.meal_name }}{% endif %}</span>
-        </div>
-        <span class="kcal">{{ entry.calories_kcal|num(0) }} kcal</span>
-        <a class="btn btn-secondary btn-sm" href="{{ url_for('log.edit_entry', entry_id=entry.id) }}"
-           aria-label="Edit {{ entry.description }}">Edit</a>
-      </li>
-    {% endfor %}
-  </ul>
+  <div class="table-wrap">
+    <table class="data-table entries-table">
+      <caption>Tap an item to change the amount or remove it. Grams, except kcal. On phones: P protein, C carbs, F fat, Fb fibre, Na salt.</caption>
+      <thead>
+        <tr>
+          <th scope="col" class="name-col">Item</th>
+          {{ nutrient_headers() }}
+        </tr>
+      </thead>
+      <tbody>
+        {% for entry in entries %}
+          <tr>
+            <th scope="row" class="name-col">
+              <a href="{{ url_for('log.edit_entry', entry_id=entry.id) }}">{{ entry.description }}</a>
+              <span class="row-meta">{{ entry.quantity|num(2) }}&nbsp;{{ entry.unit }}{% if entry.meal_name %} · {{ entry.meal_name }}{% endif %}</span>
+            </th>
+            {{ nutrient_cells(entry) }}
+          </tr>
+        {% endfor %}
+      </tbody>
+      <tfoot>
+        <tr>
+          <th scope="row" class="name-col">Total</th>
+          {{ nutrient_cells(totals) }}
+        </tr>
+      </tfoot>
+    </table>
+  </div>
 {% else %}
   <p class="empty-inline">{{ empty_text }}</p>
 {% endif %}

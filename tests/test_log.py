@@ -122,3 +122,15 @@ def test_day_label_adds_the_year_only_for_other_years():
     assert dates.day_label(date(2026, 10, 20), today) == "Yesterday"
     assert dates.day_label(date(2026, 3, 4), today) == "Wednesday 4 March"
     assert dates.day_label(date(2000, 1, 1), today) == "Saturday 1 January 2000"
+
+
+def test_eaten_table_shows_each_items_macros_and_a_total_on_log_and_dashboard(client):
+    add(client, kind="food", item_id="1", amount="1", mode="servings")   # tuna: protein 26.25, salt 1.05
+    add(client, kind="food", item_id="2", amount="1", mode="servings")   # avocado: protein 1, fibre 5
+    for url in (f"/log/{DAY}", f"/?day={DAY}"):
+        html = client.get(url).data.decode()
+        assert '<td class="num">26.3</td>' in html and '<td class="num">1.05</td>' in html   # tuna row
+        assert '<td class="num">5</td>' in html                                               # avocado fibre
+        foot = html[html.index("<tfoot>"):html.index("</tfoot>")]
+        assert ">Total<" in foot and '<td class="num">27.3</td>' in foot                      # 26.25 + 1
+        assert 'href="/log/entry/1/edit"' in html                                             # name opens the edit page

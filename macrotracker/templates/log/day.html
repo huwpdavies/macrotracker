@@ -1,0 +1,59 @@
+{% extends "base.html" %}
+{% block title %}{{ label }} · Log · Macro Tracker{% endblock %}
+{% block content %}
+  <header class="page-head">
+    <div>
+      <p class="eyebrow">Food log</p>
+      <h1>{{ label }}</h1>
+      {% if label != long_date %}<p class="muted day-date">{{ long_date }}</p>{% endif %}
+    </div>
+  </header>
+
+  <nav class="day-nav" aria-label="Choose day">
+    <a class="btn btn-secondary btn-sm" href="{{ url_for('log.day', day_text=prev_day) }}" aria-label="Previous day">← Previous</a>
+    {% if not is_today %}<a class="btn btn-secondary btn-sm" href="{{ url_for('log.today') }}">Today</a>{% endif %}
+    <a class="btn btn-secondary btn-sm" href="{{ url_for('log.day', day_text=next_day) }}" aria-label="Next day">Next →</a>
+  </nav>
+
+  <section class="section">
+    <div class="section-head"><h2>Day total</h2></div>
+    {% with macros = totals, compact = True %}{% include "partials/_nutrients.html" %}{% endwith %}
+  </section>
+
+  <section class="section">
+    <div class="section-head">
+      <h2>Add food or meal</h2>
+      <p class="section-sub">search, set the amount, tap Add</p>
+    </div>
+    <div class="search">
+      <input type="search" name="q" placeholder="Search foods and meals" aria-label="Search foods and meals" autocomplete="off"
+             hx-get="{{ url_for('log.search', day_text=day.isoformat()) }}"
+             hx-trigger="input changed delay:250ms, search, load" hx-target="#log-results">
+    </div>
+    <div id="log-results" aria-live="polite"></div>
+  </section>
+
+  <section class="section">
+    <div class="section-head">
+      <h2>Eaten</h2>
+      <p class="section-sub">{{ entries|length }} item{{ '' if entries|length == 1 else 's' }}</p>
+    </div>
+    {% if entries %}
+      <ul class="list">
+        {% for entry in entries %}
+          <li>
+            <div class="grow">
+              <span class="row-title">{{ entry.description }}</span>
+              <span class="row-meta">{{ entry.quantity|num(2) }} {{ entry.unit }}{% if entry.meal_name %} · {{ entry.meal_name }}{% endif %}</span>
+            </div>
+            <span class="kcal">{{ entry.calories_kcal|num(0) }} kcal</span>
+            <a class="btn btn-secondary btn-sm" href="{{ url_for('log.edit_entry', entry_id=entry.id) }}"
+               aria-label="Edit {{ entry.description }}">Edit</a>
+          </li>
+        {% endfor %}
+      </ul>
+    {% else %}
+      <p class="empty-inline">Nothing logged {{ 'yet today' if is_today else 'for this day' }}. Search above to add your first item.</p>
+    {% endif %}
+  </section>
+{% endblock %}

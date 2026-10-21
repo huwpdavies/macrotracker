@@ -41,3 +41,8 @@ class GoalForm(FlaskForm):
     fat_g = _nutrient("Fat (g)")
     fibre_g = _nutrient("Fibre (g)")
     salt_g = _nutrient("Salt (g)")
+
+
+class EntryForm(FlaskForm):
+    quantity = DecimalField("Amount", places=None,
+                            validators=[DataRequired(), NumberRange(min=0.01, max=100000)])

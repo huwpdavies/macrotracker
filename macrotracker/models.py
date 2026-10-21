@@ -1,8 +1,9 @@
-from datetime import date, datetime, timezone
+from datetime import datetime, timezone
 
 from sqlalchemy import Index, text
 
 from .extensions import db
+from .services.dates import today_london
 
 
 def _now():
@@ -94,7 +95,7 @@ class Goal(db.Model):
 
 class LogEntry(db.Model):
     id = db.Column(db.Integer, primary_key=True)
-    log_date = db.Column(db.Date, nullable=False, default=date.today, index=True)
+    log_date = db.Column(db.Date, nullable=False, default=today_london, index=True)
     food_id = db.Column(db.Integer, db.ForeignKey("food.id", ondelete="SET NULL"))
     meal_name = db.Column(db.String(200))
     description = db.Column(db.String(200), nullable=False)

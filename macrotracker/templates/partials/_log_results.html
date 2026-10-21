@@ -1,0 +1,40 @@
+{# Quick-add results. Each row is its own small form that logs the item to `day`. #}
+{% macro add_form(kind, item, label, meta, default_mode=None) %}
+  <li class="result">
+    <div class="grow">
+      <span class="row-title">{{ '★ ' if item.is_favourite }}{{ label }}</span>
+      <span class="row-meta">{{ meta }}</span>
+    </div>
+    <form method="post" action="{{ url_for('log.add', day_text=day.isoformat()) }}" class="result-form">
+      <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+      <input type="hidden" name="kind" value="{{ kind }}">
+      <input type="hidden" name="item_id" value="{{ item.id }}">
+      <input type="number" name="amount" value="1" min="0" step="any" inputmode="decimal" aria-label="Amount of {{ label }}" class="result-amount">
+      {% if kind == "food" %}
+        <select name="mode" aria-label="Amount is in" class="result-mode">
+          <option value="servings">serving</option>
+          <option value="amount">{{ item.unit }}</option>
+        </select>
+      {% else %}
+        <span class="result-unit">serving</span>
+      {% endif %}
+      <button type="submit" class="btn btn-primary btn-sm">Add</button>
+    </form>
+  </li>
+{% endmacro %}
+
+{% if foods or meals %}
+  {% if not q %}<p class="hint">Your favourites. Type to search everything.</p>{% endif %}
+  <ul class="list results">
+    {% for meal in meals %}
+      {{ add_form("meal", meal, meal.name, "Meal · " ~ meal.items|length ~ " foods · makes " ~ (meal.servings|num(2)) ~ " serving" ~ ('' if meal.servings == 1 else 's')) }}
+    {% endfor %}
+    {% for food in foods %}
+      {{ add_form("food", food, food.name, "Food · 1 serving = " ~ (food.serving_label or (food.serving_size|num(2) ~ ' ' ~ food.unit))) }}
+    {% endfor %}
+  </ul>
+{% elif q %}
+  <p class="empty-inline">Nothing matches "{{ q }}". <a href="{{ url_for('foods.new') }}">Add it as a new food</a>.</p>
+{% else %}
+  <p class="hint">Start typing to find a food or meal. Star your regulars and they will appear here.</p>
+{% endif %}

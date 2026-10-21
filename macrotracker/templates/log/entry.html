@@ -1,0 +1,41 @@
+{% extends "base.html" %}
+{% block title %}Edit {{ entry.description }} · Macro Tracker{% endblock %}
+{% block content %}
+  <a class="back" href="{{ url_for('log.day', day_text=entry.log_date.isoformat()) }}">← {{ label }}</a>
+  <header class="page-head">
+    <div>
+      <p class="eyebrow">Log entry{% if entry.meal_name %} · {{ entry.meal_name }}{% endif %}</p>
+      <h1>{{ entry.description }}</h1>
+    </div>
+  </header>
+
+  <form method="post">
+    {{ form.hidden_tag() }}
+    {% if form.errors %}
+      <ul class="errors">{% for error in form.quantity.errors %}<li>Amount: {{ error }}</li>{% endfor %}</ul>
+    {% endif %}
+
+    <section class="section">
+      <div class="section-head"><h2>Amount eaten</h2><p class="section-sub">nutrition scales with the amount</p></div>
+      <div class="facts">
+        <label class="tile" for="{{ form.quantity.id }}">
+          <span class="tile-label">Amount</span>
+          <span class="tile-line">{{ form.quantity(class_="tile-input", inputmode="decimal") }}<small>{{ entry.unit }}</small></span>
+        </label>
+      </div>
+    </section>
+
+    <section class="section">
+      <div class="section-head"><h2>Logged nutrition</h2><p class="section-sub">saved when logged; editing the food won't change it</p></div>
+      {% with macros = entry, compact = True %}{% include "partials/_nutrients.html" %}{% endwith %}
+    </section>
+
+    <div class="actions">
+      <button type="submit" class="btn btn-primary">Save changes</button>
+      <a class="btn btn-secondary" href="{{ url_for('log.day', day_text=entry.log_date.isoformat()) }}">Cancel</a>
+      <span class="spacer"></span>
+      <button type="submit" class="btn btn-danger" formaction="{{ url_for('log.delete_entry', entry_id=entry.id) }}"
+              formnovalidate onclick="return confirm('Remove {{ entry.description|replace("'", "") }} from the log?')">Remove</button>
+    </div>
+  </form>
+{% endblock %}

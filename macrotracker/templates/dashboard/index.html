@@ -8,11 +8,11 @@
   </header>
 
   <div class="hero">
-    <h2>Build your library</h2>
-    <p>Add the foods you eat and group them into meals. Daily logging and your goal dashboard come next.</p>
+    <h2>What have you eaten today?</h2>
+    <p>Log foods and meals as you go. The full goal dashboard is coming next.</p>
     <div class="row">
-      <a class="btn btn-light" href="{{ url_for('foods.new') }}">Add food</a>
-      <a class="btn btn-outline-light" href="{{ url_for('meals.new') }}">Add meal</a>
+      <a class="btn btn-light" href="{{ url_for('log.today') }}">Log today's food</a>
+      <a class="btn btn-outline-light" href="{{ url_for('foods.new') }}">Add a new food</a>
     </div>
   </div>
 

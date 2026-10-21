@@ -2,11 +2,10 @@
 {% if rows %}
   <div class="table-wrap">
     <table class="data-table">
-      <caption>Grams per typical serving, except kcal. On phones: P protein, C carbs, F fat, Fb fibre, Na salt.</caption>
+      <caption>Grams per serving (shown under each name), except kcal. On phones: P protein, C carbs, F fat, Fb fibre, Na salt.</caption>
       <thead>
         <tr>
           <th scope="col" class="name-col">Food</th>
-          <th scope="col" class="serving-col">Serving</th>
           {{ nutrient_headers() }}
         </tr>
       </thead>
@@ -16,10 +15,13 @@
             <th scope="row" class="name-col">
               <div class="name-cell">
                 {{ star(food, url_for('foods.favourite', food_id=food.id), '#food-list', '[name=q]') }}
-                <a href="{{ url_for('foods.detail', food_id=food.id) }}">{{ food.name }}</a>
+                <div>
+                  <a href="{{ url_for('foods.detail', food_id=food.id) }}">{{ food.name }}</a>
+                  {# The numbers in this row are for one serving, so show what a serving is right under the name. #}
+                  <span class="row-meta">{{ food.serving_label or (food.serving_size|num(2) ~ '\u00a0' ~ food.unit) }}{% if food.serving_label %}<span class="serving-size"> · {{ food.serving_size|num(2) }}&nbsp;{{ food.unit }}</span>{% endif %}</span>
+                </div>
               </div>
             </th>
-            <td class="muted serving-col">{{ food.serving_label or (food.serving_size|num ~ ' ' ~ food.unit) }}</td>
             {{ nutrient_cells(m) }}
           </tr>
         {% endfor %}

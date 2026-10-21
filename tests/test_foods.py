@@ -67,3 +67,11 @@ def test_parse_label_endpoint(client):
     assert resp.json["values"]["calories_kcal"] == 250
     assert resp.json["values"]["salt_g"] == 1.2
     assert resp.json["missing"] == ["fibre_g"]
+
+
+def test_list_shows_serving_under_each_name(client):
+    client.post("/foods/new", data=FORM)                                         # labelled: "1 can"
+    client.post("/foods/new", data={**FORM, "name": "Oats", "serving_label": ""})  # no label
+    html = client.get("/foods/").data
+    assert b'<span class="row-meta">1 can<span class="serving-size"> \xc2\xb7 105&nbsp;g</span></span>' in html
+    assert b'<span class="row-meta">105\xc2\xa0g</span>' in html

@@ -267,7 +267,8 @@ a.tile:hover { border-color: var(--accent); color: var(--text); }
 
 /* 11 Log: day navigation and quick-add results ---------------------------- */
 .day-date { margin: var(--s1) 0 0; }
-.day-nav { display: flex; flex-wrap: wrap; gap: var(--s2); margin-top: calc(-1 * var(--s2)); }
+/* Previous / Today / Next sit at the bottom of the dashboard and log, after the day's content. */
+.day-nav { display: flex; flex-wrap: wrap; gap: var(--s2); margin-top: var(--s6); padding-top: var(--s5); border-top: 1px solid var(--line); }
 .results > li { flex-wrap: wrap; }
 .result-form { display: flex; align-items: center; gap: var(--s2); }
 .result-form .result-amount { width: 4.5rem; min-height: 2.25rem; padding: var(--s1) var(--s2); }

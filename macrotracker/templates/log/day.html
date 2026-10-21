@@ -9,12 +9,6 @@
     </div>
   </header>
 
-  <nav class="day-nav" aria-label="Choose day">
-    <a class="btn btn-secondary btn-sm" href="{{ url_for('log.day', day_text=prev_day) }}" aria-label="Previous day">← Previous</a>
-    {% if not is_today %}<a class="btn btn-secondary btn-sm" href="{{ url_for('log.today') }}">Today</a>{% endif %}
-    <a class="btn btn-secondary btn-sm" href="{{ url_for('log.day', day_text=next_day) }}" aria-label="Next day">Next →</a>
-  </nav>
-
   <section class="section">
     <div class="section-head"><h2>Day total</h2></div>
     {% with macros = totals, compact = True %}{% include "partials/_nutrients.html" %}{% endwith %}
@@ -42,4 +36,10 @@
       {% include "partials/_entries.html" %}
     {% endwith %}
   </section>
+
+  <nav class="day-nav" aria-label="Choose day">
+    <a class="btn btn-secondary btn-sm" href="{{ url_for('log.day', day_text=prev_day) }}" aria-label="Previous day">← Previous</a>
+    {% if not is_today %}<a class="btn btn-secondary btn-sm" href="{{ url_for('log.today') }}">Today</a>{% endif %}
+    <a class="btn btn-secondary btn-sm" href="{{ url_for('log.day', day_text=next_day) }}" aria-label="Next day">Next →</a>
+  </nav>
 {% endblock %}

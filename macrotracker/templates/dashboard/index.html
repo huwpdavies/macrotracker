@@ -24,12 +24,6 @@
   </header>
   {% if cheer %}<p class="lede cheer">{{ cheer }}</p>{% endif %}
 
-  <nav class="day-nav" aria-label="Choose day">
-    <a class="btn btn-secondary btn-sm" href="{{ url_for('dashboard.index', day=prev_day) }}">← Previous</a>
-    {% if not is_today %}<a class="btn btn-secondary btn-sm" href="{{ url_for('dashboard.index') }}">Today</a>{% endif %}
-    <a class="btn btn-secondary btn-sm" href="{{ url_for('dashboard.index', day=next_day) }}">Next →</a>
-  </nav>
-
   {% if not goal %}
     <div class="empty section">
       <p>Set a goal to see how your day compares with your targets.</p>
@@ -88,4 +82,10 @@
     {% endwith %}
     <p class="add-row"><a class="btn btn-primary" href="{{ url_for('log.day', day_text=day.isoformat()) }}">Add food or meal</a></p>
   </section>
+
+  <nav class="day-nav" aria-label="Choose day">
+    <a class="btn btn-secondary btn-sm" href="{{ url_for('dashboard.index', day=prev_day) }}">← Previous</a>
+    {% if not is_today %}<a class="btn btn-secondary btn-sm" href="{{ url_for('dashboard.index') }}">Today</a>{% endif %}
+    <a class="btn btn-secondary btn-sm" href="{{ url_for('dashboard.index', day=next_day) }}">Next →</a>
+  </nav>
 {% endblock %}

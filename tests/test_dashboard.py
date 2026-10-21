@@ -86,3 +86,17 @@ def test_salt_is_a_ceiling_so_just_over_100_percent_warns():
     assert rows["salt_g"]["status"] == "over" and rows["salt_g"]["tone"] == "warn"   # 105%
     rows = by_key({**{k: Decimal(0) for k in dashboard.NUTRIENTS}, "salt_g": Decimal("5.7")})
     assert rows["salt_g"]["status"] == "on"                                          # 95%
+
+
+def test_cheer_line_puts_problems_first_then_wins():
+    zero = {k: Decimal(0) for k in dashboard.NUTRIENTS}
+    rows = lambda **v: dashboard.progress({**zero, **{k: Decimal(x) for k, x in v.items()}}, GOAL)
+    assert dashboard.cheer(rows(), has_entries=False) == "A fresh page. What's first today?"
+    assert dashboard.cheer(rows(salt_g=7, protein_g=100), True) == "Heads up: you're over on salt."
+    assert dashboard.cheer(rows(protein_g=100), True) == "Protein goal reached. Nice work!"
+    assert dashboard.cheer(rows(protein_g=80), True) == "Nice! 80% of your protein is done."
+    assert dashboard.cheer(rows(protein_g=10), True) == "Good start. Keep logging as you go."
+
+
+def test_favicon_is_served(client):
+    assert client.get("/favicon.svg").status_code == 200

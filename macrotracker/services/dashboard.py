@@ -54,3 +54,19 @@ def progress(totals, goal):
                 row["tone"] = "celebrate" if key in MORE_IS_BETTER else "warn"
         rows.append(row)
     return rows
+
+
+def cheer(rows, has_entries):
+    """One friendly line for the top of the dashboard. Problems first, then wins, then encouragement."""
+    by_key = {r["key"]: r for r in rows}
+    if not has_entries:
+        return "A fresh page. What's first today?"
+    warnings = [r["label"].lower() for r in rows if r["tone"] == "warn"]
+    if warnings:
+        return f"Heads up: you're over on {' and '.join(warnings)}."
+    protein = by_key["protein_g"]
+    if protein["status"] in ("on", "over"):
+        return "Protein goal reached. Nice work!"
+    if protein["percent"] is not None and protein["percent"] >= 50:
+        return f"Nice! {int(protein['percent'])}% of your protein is done."
+    return "Good start. Keep logging as you go."

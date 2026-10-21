@@ -1,0 +1,27 @@
+{# One layout for a goal, used by the goal page (editing=False) and the add/edit form (editing=True). #}
+{% from "partials/_tile_macros.html" import nutrient_tiles %}
+<header class="page-head">
+  <div>
+    <p class="eyebrow">Goal{% if goal and goal.is_active %} · <span class="badge">Active</span>{% endif %}</p>
+    {% if editing %}
+      <label for="{{ form.name.id }}" class="sr-only">Goal name</label>
+      {{ form.name(class_="title-input", placeholder="Goal name, e.g. Maintain", autocomplete="off") }}
+    {% else %}
+      <h1>{{ goal.name }}</h1>
+    {% endif %}
+  </div>
+</header>
+
+{% if editing and form.errors %}
+  <ul class="errors">
+    {% for field in form %}{% for error in field.errors %}<li>{{ field.label.text }}: {{ error }}</li>{% endfor %}{% endfor %}
+  </ul>
+{% endif %}
+
+<section class="section">
+  <div class="section-head">
+    <h2>Daily targets</h2>
+    <p class="section-sub">how much you aim to eat each day</p>
+  </div>
+  {{ nutrient_tiles(editing, form, goal) }}
+</section>

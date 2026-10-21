@@ -1,18 +1,6 @@
 {# One layout for a food, used by the food page (editing=False) and the add/edit form (editing=True),
    so the two look the same; the only difference is that the values are inputs when editing. #}
-{% macro tile(key, label, unit, places=1, extra="") %}
-  {% if editing %}
-    <label class="tile {{ extra }}" for="{{ form[key].id }}">
-      <span class="tile-label">{{ label }}</span>
-      <span class="tile-line">{{ form[key](class_="tile-input", inputmode="decimal") }}<small>{{ unit }}</small></span>
-    </label>
-  {% else %}
-    <div class="tile {{ extra }}">
-      <span class="tile-label">{{ label }}</span>
-      <span class="tile-line"><span class="tile-value">{{ food[key]|num(places) }}</span><small>{{ unit }}</small></span>
-    </div>
-  {% endif %}
-{% endmacro %}
+{% from "partials/_tile_macros.html" import nutrient_tiles %}
 
 <header class="page-head">
   <div>
@@ -45,14 +33,7 @@
       {% endif %}
     </p>
   </div>
-  <div class="nutrients">
-    {{ tile("calories_kcal", "Calories", "kcal", 0, "tile-kcal") }}
-    {{ tile("protein_g", "Protein", "g") }}
-    {{ tile("carbs_g", "Carbs", "g") }}
-    {{ tile("fat_g", "Fat", "g") }}
-    {{ tile("fibre_g", "Fibre", "g") }}
-    {{ tile("salt_g", "Salt", "g", 2) }}
-  </div>
+  {{ nutrient_tiles(editing, form, food) }}
 </section>
 
 <section class="section">

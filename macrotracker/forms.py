@@ -31,3 +31,13 @@ class MealForm(FlaskForm):
     servings = DecimalField("Servings this makes", default=1, places=None,
                             validators=[DataRequired(), NumberRange(min=0.01, max=1000)])
     notes = StringField("Notes (optional)", validators=[Optional(), Length(max=500)])
+
+
+class GoalForm(FlaskForm):
+    name = StringField("Goal name", validators=[DataRequired(), Length(max=100)])
+    calories_kcal = _nutrient("Calories (kcal)")
+    protein_g = _nutrient("Protein (g)")
+    carbs_g = _nutrient("Carbs (g)")
+    fat_g = _nutrient("Fat (g)")
+    fibre_g = _nutrient("Fibre (g)")
+    salt_g = _nutrient("Salt (g)")

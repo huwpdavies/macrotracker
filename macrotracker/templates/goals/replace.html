@@ -1,0 +1,31 @@
+{% extends "base.html" %}
+{% block title %}Delete {{ goal.name }} · Macro Tracker{% endblock %}
+{% block content %}
+  <a class="back" href="{{ url_for('goals.detail', goal_id=goal.id) }}">← {{ goal.name }}</a>
+  <header class="page-head">
+    <div>
+      <p class="eyebrow">Delete active goal</p>
+      <h1>Which goal should take over?</h1>
+    </div>
+  </header>
+  <p class="lede">{{ goal.name }} is your active goal. Choose the goal to use from now on, then {{ goal.name }} will be deleted.</p>
+
+  <form method="post" action="{{ url_for('goals.delete', goal_id=goal.id) }}">
+    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+    <ul class="list choices">
+      {% for other in others %}
+        <li>
+          <label class="choice">
+            <input type="radio" name="replacement_id" value="{{ other.id }}" required {{ 'checked' if loop.first }}>
+            <span class="grow">{{ other.name }}</span>
+            <span class="kcal">{{ other.calories_kcal|num(0) }} kcal</span>
+          </label>
+        </li>
+      {% endfor %}
+    </ul>
+    <div class="actions">
+      <button type="submit" class="btn btn-danger">Switch and delete</button>
+      <a class="btn btn-secondary" href="{{ url_for('goals.detail', goal_id=goal.id) }}">Cancel</a>
+    </div>
+  </form>
+{% endblock %}

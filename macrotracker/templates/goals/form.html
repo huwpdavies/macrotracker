@@ -1,0 +1,14 @@
+{% extends "base.html" %}
+{% block title %}{{ 'Edit' if goal else 'Add' }} goal · Macro Tracker{% endblock %}
+{% block content %}
+  {% set editing = True %}
+  <a class="back" href="{{ url_for('goals.index') }}">← Goals</a>
+  <form method="post">
+    {{ form.hidden_tag() }}
+    {% include "goals/_sheet.html" %}
+    <div class="actions">
+      <button type="submit" class="btn btn-primary">{{ 'Save changes' if goal else 'Add goal' }}</button>
+      <a class="btn btn-secondary" href="{{ url_for('goals.detail', goal_id=goal.id) if goal else url_for('goals.index') }}">Cancel</a>
+    </div>
+  </form>
+{% endblock %}

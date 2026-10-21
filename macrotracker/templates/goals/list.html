@@ -1,0 +1,53 @@
+{% extends "base.html" %}
+{% from "partials/_table_macros.html" import nutrient_headers, nutrient_cells %}
+{% block title %}Goals · Macro Tracker{% endblock %}
+{% block main_class %}wide{% endblock %}
+{% block content %}
+  <header class="page-head">
+    <div>
+      <p class="eyebrow">Targets</p>
+      <h1>Goals</h1>
+    </div>
+    <a class="btn btn-primary" href="{{ url_for('goals.new') }}">Add goal</a>
+  </header>
+
+  {% if goals %}
+    <div class="table-wrap">
+      <table class="data-table">
+        <caption>Daily targets in grams, except kcal. One goal is active at a time; the dashboard compares your day with it.</caption>
+        <thead>
+          <tr>
+            <th scope="col" class="name-col">Goal</th>
+            {{ nutrient_headers() }}
+          </tr>
+        </thead>
+        <tbody>
+          {% for goal in goals %}
+            <tr{% if goal.is_active %} class="is-active"{% endif %}>
+              <th scope="row" class="name-col">
+                {# Status sits under the name so the one-click switch is visible on phones too. #}
+                <div class="goal-cell">
+                  <a href="{{ url_for('goals.detail', goal_id=goal.id) }}">{{ goal.name }}</a>
+                  {% if goal.is_active %}
+                    <span class="badge">Active</span>
+                  {% else %}
+                    <form method="post" action="{{ url_for('goals.activate', goal_id=goal.id) }}" class="inline">
+                      <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                      <button type="submit" class="btn btn-secondary btn-sm">Make active</button>
+                    </form>
+                  {% endif %}
+                </div>
+              </th>
+              {{ nutrient_cells(goal) }}
+            </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  {% else %}
+    <div class="empty">
+      <p>No goals yet. A goal sets your daily targets for each nutrient.</p>
+      <a class="btn btn-primary" href="{{ url_for('goals.new') }}">Add your first goal</a>
+    </div>
+  {% endif %}
+{% endblock %}

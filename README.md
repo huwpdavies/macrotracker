@@ -1,6 +1,6 @@
 # Macro Tracker
 
-A simple, phone-friendly web app for logging what I eat each day and comparing it with a daily goal for calories, protein, carbs, fat, fibre and salt. Single user, no login.
+A simple, phone-friendly web app (dark theme, tangerine accent) for logging what I eat each day and comparing it with a daily goal for calories, protein, carbs, fat, fibre and salt. Single user, no login.
 
 > **Warning: there is no login.** Anyone who has the URL can view and change the data. Do not share the URL. The site asks search engines not to index it (`noindex` and `robots.txt`), but that is not security.
 
@@ -23,7 +23,7 @@ A simple, phone-friendly web app for logging what I eat each day and comparing i
 
 ## Stack
 
-Flask (Python) with Jinja templates and HTMX, plain CSS (no build step), Supabase Postgres via SQLAlchemy and Flask-Migrate, hosted on Vercel. "Today" always means today in Europe/London.
+Flask (Python) with Jinja templates and HTMX, plain CSS (no build step, Jost font, colours as named tokens at the top of `public/css/main.css`), Supabase Postgres via SQLAlchemy and Flask-Migrate, hosted on Vercel. "Today" always means today in Europe/London.
 
 ## Run it locally
 

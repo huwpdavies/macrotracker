@@ -115,3 +115,10 @@ def test_search_uses_query_string_and_shows_favourites_by_default(client):
     assert b"Avocado" in resp.data and b"<html" not in resp.data
     resp = client.get(f"/log/{DAY}/search?q=lun")
     assert b"Lunch" in resp.data
+
+
+def test_day_label_adds_the_year_only_for_other_years():
+    today = date(2026, 10, 21)
+    assert dates.day_label(date(2026, 10, 20), today) == "Yesterday"
+    assert dates.day_label(date(2026, 3, 4), today) == "Wednesday 4 March"
+    assert dates.day_label(date(2000, 1, 1), today) == "Saturday 1 January 2000"

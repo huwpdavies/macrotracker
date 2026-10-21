@@ -43,4 +43,11 @@ def create_app(config_object=Config):
         text = f"{Decimal(str(value)).quantize(exp, rounding=ROUND_HALF_UP):f}"
         return text.rstrip("0").rstrip(".") if "." in text else text
 
+    @app.template_filter("pct")
+    def pct(value):
+        """57.84 -> "58%"; None (no target) -> "–"."""
+        if value is None:
+            return "–"
+        return f"{Decimal(str(value)).quantize(Decimal(1), rounding=ROUND_HALF_UP)}%"
+
     return app

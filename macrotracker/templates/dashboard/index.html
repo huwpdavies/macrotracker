@@ -1,36 +1,90 @@
 {% extends "base.html" %}
+{% block title %}{{ label }} · Macro Tracker{% endblock %}
 {% block content %}
+  {# Message under each bar. Built from the status worked out in services/dashboard.py. #}
+  {% macro status_text(row) %}
+    {%- if row.status == "no-target" -%}No target set
+    {%- elif row.status == "under" -%}{{ row.remaining|num(row.places) }} {{ row.unit }} to go
+    {%- elif row.status == "on" -%}On target
+    {%- elif row.tone == "celebrate" -%}Goal reached, {{ (row.eaten - row.target)|num(row.places) }} {{ row.unit }} extra
+    {%- else -%}{{ (row.eaten - row.target)|num(row.places) }} {{ row.unit }} over
+    {%- endif -%}
+  {% endmacro %}
+  {% macro status_icon(row) %}
+    {%- if row.status == "on" or row.tone == "celebrate" %}<span class="status-icon" aria-hidden="true">✓</span>
+    {%- elif row.tone == "warn" %}<span class="status-icon" aria-hidden="true">!</span>{% endif -%}
+  {% endmacro %}
+
   <header class="page-head">
     <div>
-      <p class="eyebrow">Welcome back</p>
-      <h1>Macro Tracker</h1>
+      <p class="eyebrow">Dashboard</p>
+      <h1>{{ label }}</h1>
+      {% if label != long_date %}<p class="muted day-date">{{ long_date }}</p>{% endif %}
     </div>
   </header>
 
-  <div class="hero">
-    <h2>What have you eaten today?</h2>
-    <p>Log foods and meals as you go. The full goal dashboard is coming next.</p>
-    <div class="row">
-      <a class="btn btn-light" href="{{ url_for('log.today') }}">Log today's food</a>
-      <a class="btn btn-outline-light" href="{{ url_for('foods.new') }}">Add a new food</a>
+  <nav class="day-nav" aria-label="Choose day">
+    <a class="btn btn-secondary btn-sm" href="{{ url_for('dashboard.index', day=prev_day) }}">← Previous</a>
+    {% if not is_today %}<a class="btn btn-secondary btn-sm" href="{{ url_for('dashboard.index') }}">Today</a>{% endif %}
+    <a class="btn btn-secondary btn-sm" href="{{ url_for('dashboard.index', day=next_day) }}">Next →</a>
+  </nav>
+
+  {% if not goal %}
+    <div class="empty section">
+      <p>Set a goal to see how your day compares with your targets.</p>
+      <a class="btn btn-primary" href="{{ url_for('goals.new') }}">Add a goal</a>
     </div>
-  </div>
+  {% endif %}
+
+  {# Calories: the prominent card #}
+  {% set c = calories %}
+  <section class="calorie-card {{ c.tone }}" aria-labelledby="cal-label">
+    <div class="calorie-top">
+      <div>
+        <p class="eyebrow" id="cal-label">Calories</p>
+        <p class="calorie-figure"><span class="big">{{ c.eaten|num(0) }}</span>
+          {% if c.target %}<span class="of">of {{ c.target|num(0) }} kcal</span>{% else %}<span class="of">kcal</span>{% endif %}</p>
+      </div>
+      {% if c.percent is not none %}<p class="calorie-pct">{{ c.percent|pct }}</p>{% endif %}
+    </div>
+    {% if c.percent is not none %}
+      <div class="bar bar-light" aria-hidden="true"><span class="bar-fill" style="width: {{ [c.percent, 100]|min }}%"></span></div>
+    {% endif %}
+    <p class="status">{{ status_icon(c) }}{{ status_text(c) }}</p>
+  </section>
 
   <section class="section">
-    <div class="section-head"><h2>At a glance</h2></div>
-    <div class="facts">
-      <a class="tile" href="{{ url_for('foods.index') }}">
-        <span class="tile-label">Foods</span>
-        <span class="tile-line"><span class="tile-value">{{ food_count }}</span></span>
-      </a>
-      <a class="tile" href="{{ url_for('meals.index') }}">
-        <span class="tile-label">Meals</span>
-        <span class="tile-line"><span class="tile-value">{{ meal_count }}</span></span>
-      </a>
-      <a class="tile" href="{{ url_for('goals.index') }}">
-        <span class="tile-label">Active goal</span>
-        <span class="tile-text">{{ active_goal.name if active_goal else "None yet" }}</span>
-      </a>
+    <div class="section-head">
+      <h2>Nutrients</h2>
+      {% if goal %}<p class="section-sub">goal: <a href="{{ url_for('goals.detail', goal_id=goal.id) }}">{{ goal.name }}</a> · <a href="{{ url_for('goals.index') }}">change</a></p>{% endif %}
     </div>
+    <ul class="meters">
+      {% for row in nutrients %}
+        <li class="meter {{ row.tone }}">
+          <div class="meter-head">
+            <span class="meter-label">{{ row.label }}</span>
+            <span class="meter-figures">
+              <strong>{{ row.eaten|num(row.places) }}</strong>{% if row.target %} / {{ row.target|num(row.places) }}{% endif %} {{ row.unit }}
+              {% if row.percent is not none %}<span class="meter-pct">{{ row.percent|pct }}</span>{% endif %}
+            </span>
+          </div>
+          {% if row.percent is not none %}
+            <div class="bar" aria-hidden="true"><span class="bar-fill" style="width: {{ [row.percent, 100]|min }}%"></span></div>
+          {% endif %}
+          <p class="status">{{ status_icon(row) }}{{ status_text(row) }}</p>
+        </li>
+      {% endfor %}
+    </ul>
+  </section>
+
+  <section class="section">
+    <div class="section-head">
+      <h2>Eaten</h2>
+      <p class="section-sub">{{ entries|length }} item{{ '' if entries|length == 1 else 's' }}</p>
+    </div>
+    {% with empty_text = "Your plate is empty " ~ ("today" if is_today else "for this day") ~ ". Add something tasty to get started." %}
+      {% include "partials/_entries.html" %}
+    {% endwith %}
+    <p class="add-row"><a class="btn btn-primary" href="{{ url_for('log.day', day_text=day.isoformat()) }}">Add food or meal</a></p>
   </section>
 {% endblock %}

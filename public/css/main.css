@@ -257,3 +257,43 @@ input.title-input::placeholder { color: var(--line-strong); }
 }
 .row-title { display: block; font-weight: 600; overflow-wrap: anywhere; }
 .row-meta { display: block; font-size: .875rem; color: var(--muted); }
+
+/* Dashboard: calories card and nutrient meters */
+.calorie-card { margin-top: var(--s5); padding: var(--s5); border-radius: var(--radius); background: var(--navy) var(--grain); color: var(--on-navy); box-shadow: var(--shadow); }
+.calorie-card .eyebrow { color: var(--on-navy-muted); }
+.calorie-top { display: flex; justify-content: space-between; align-items: flex-end; gap: var(--s4); }
+.calorie-figure { margin: 0; display: flex; align-items: baseline; flex-wrap: wrap; gap: var(--s2); }
+.calorie-figure .big { font-family: var(--serif); font-size: 3rem; font-weight: 600; line-height: 1; font-variant-numeric: tabular-nums; }
+.calorie-figure .of { color: var(--on-navy-muted); }
+.calorie-pct { margin: 0; font-size: 1.25rem; font-weight: 600; font-variant-numeric: tabular-nums; }
+.calorie-card .status { color: var(--on-navy); }
+.calorie-card.warn .status-icon { background: #F2B8AE; color: var(--navy); }
+
+.meters { list-style: none; margin: 0; padding: 0; display: grid; gap: var(--s3); }
+.meter { background: var(--paper); border: 1px solid var(--line); border-radius: var(--radius); box-shadow: var(--shadow); padding: var(--s3) var(--s4); }
+.meter-head { display: flex; justify-content: space-between; align-items: baseline; gap: var(--s3); flex-wrap: wrap; }
+.meter-label { font-weight: 600; }
+.meter-figures { font-variant-numeric: tabular-nums; color: var(--muted); }
+.meter-figures strong { color: var(--navy); font-size: 1.125rem; }
+.meter-pct { margin-left: var(--s2); font-weight: 600; color: var(--navy); }
+
+.bar { position: relative; height: .625rem; margin-top: var(--s2); border-radius: 999px; background: var(--ivory-deep); overflow: hidden; }
+.bar-fill { display: block; height: 100%; border-radius: inherit; background: var(--navy); transform-origin: left; animation: bar-grow .7s ease-out both; }
+.bar-light { background: rgba(255, 255, 255, .16); margin-top: var(--s4); }
+.bar-light .bar-fill { background: var(--on-navy); }
+.meter.warn .bar-fill { background: var(--danger); }
+.meter.warn .meter-pct, .meter.warn .status { color: var(--danger); }
+.calorie-card.warn .bar-fill { background: #F2B8AE; }
+@keyframes bar-grow { from { transform: scaleX(0); } }
+
+.status { margin: var(--s2) 0 0; font-size: .875rem; color: var(--muted); display: flex; align-items: center; gap: var(--s2); }
+.meter.good .status, .meter.celebrate .status { color: var(--navy); font-weight: 600; }
+.status-icon { display: inline-flex; align-items: center; justify-content: center; width: 1.25rem; height: 1.25rem; border-radius: 999px;
+  background: var(--navy); color: var(--on-navy); font-size: .75rem; font-weight: 700; flex: none; }
+.meter.warn .status-icon { background: var(--danger); }
+.calorie-card .status-icon { background: var(--on-navy); color: var(--navy); }
+/* A small celebration when protein or fibre goes past the goal. */
+.meter.celebrate { border-color: var(--navy); }
+.meter.celebrate .status-icon { animation: pop .5s ease-out .6s both; }
+@keyframes pop { 0% { transform: scale(0); } 70% { transform: scale(1.3); } 100% { transform: scale(1); } }
+@media (max-width: 640px) { .calorie-figure .big { font-size: 2.5rem; } }

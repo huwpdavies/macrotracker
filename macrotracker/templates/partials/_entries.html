@@ -1,0 +1,18 @@
+{# The day's log entries. Expects `entries` and `empty_text`. Shared by the dashboard and the log page. #}
+{% if entries %}
+  <ul class="list">
+    {% for entry in entries %}
+      <li>
+        <div class="grow">
+          <span class="row-title">{{ entry.description }}</span>
+          <span class="row-meta">{{ entry.quantity|num(2) }} {{ entry.unit }}{% if entry.meal_name %} · {{ entry.meal_name }}{% endif %}</span>
+        </div>
+        <span class="kcal">{{ entry.calories_kcal|num(0) }} kcal</span>
+        <a class="btn btn-secondary btn-sm" href="{{ url_for('log.edit_entry', entry_id=entry.id) }}"
+           aria-label="Edit {{ entry.description }}">Edit</a>
+      </li>
+    {% endfor %}
+  </ul>
+{% else %}
+  <p class="empty-inline">{{ empty_text }}</p>
+{% endif %}

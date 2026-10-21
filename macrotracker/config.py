@@ -18,8 +18,17 @@ def _database_uri():
     return url
 
 
+def _secret_key():
+    key = os.environ.get("SECRET_KEY")
+    # Vercel sets VERCEL=1. A deployed site must never fall back to the public dev key,
+    # because anyone could then forge the CSRF tokens that protect every form.
+    if not key and os.environ.get("VERCEL"):
+        raise RuntimeError("SECRET_KEY is not set. Add it in Vercel → Settings → Environment Variables.")
+    return key or "dev-only-not-secret"
+
+
 class Config:
-    SECRET_KEY = os.environ.get("SECRET_KEY", "dev-only-not-secret")
+    SECRET_KEY = _secret_key()
     SQLALCHEMY_DATABASE_URI = _database_uri()
     SQLALCHEMY_TRACK_MODIFICATIONS = False
     # Units offered on the food form. Add to this list to extend it.

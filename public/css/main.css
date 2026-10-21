@@ -235,6 +235,11 @@ a.tile:hover { border-color: var(--navy); }
 .empty p { color: var(--muted); }
 .empty-inline { margin: 0; padding: var(--s4); color: var(--muted); background: var(--paper); border: 1px dashed var(--line-strong); border-radius: var(--radius); }
 
+/* Error pages */
+.error-page { padding: var(--s6) 0; }
+.error-page h1 { margin-bottom: var(--s3); }
+.error-actions { display: flex; flex-wrap: wrap; gap: var(--s3); margin-top: var(--s5); }
+
 /* 9 Meals: ingredient rows in the meal form ------------------------------- */
 .item-row { flex-wrap: wrap; }
 .item-row .item-food { flex: 1 1 14rem; min-width: 0; }

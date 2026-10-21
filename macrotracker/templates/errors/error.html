@@ -1,0 +1,13 @@
+{% extends "base.html" %}
+{% block title %}{{ title }} · Macro Tracker{% endblock %}
+{% block content %}
+  <div class="error-page">
+    <p class="eyebrow">Error {{ code }}</p>
+    <h1>{{ title }}</h1>
+    <p class="lede">{{ message }}</p>
+    <div class="error-actions">
+      {% if retry %}<a class="btn btn-primary" href="{{ request.url }}">Try again</a>{% endif %}
+      <a class="btn {{ 'btn-secondary' if retry else 'btn-primary' }}" href="{{ url_for('dashboard.index') }}">Go to dashboard</a>
+    </div>
+  </div>
+{% endblock %}

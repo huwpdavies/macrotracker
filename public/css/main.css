@@ -241,3 +241,19 @@ input.title-input::placeholder { color: var(--line-strong); }
 .choices > li { padding: 0; }
 .choice { display: flex; align-items: center; gap: var(--s3); width: 100%; padding: var(--s3) var(--s4); cursor: pointer; }
 .choice input { width: 1.15rem; height: 1.15rem; accent-color: var(--navy); }
+
+/* Food log */
+.day-date { margin: var(--s1) 0 0; }
+.day-nav { display: flex; flex-wrap: wrap; gap: var(--s2); margin-top: calc(-1 * var(--s2)); }
+.results > li { flex-wrap: wrap; }
+.result-form { display: flex; align-items: center; gap: var(--s2); }
+.result-form .result-amount { width: 4.5rem; min-height: 2.25rem; padding: var(--s1) var(--s2); }
+.result-form .result-mode { width: auto; min-height: 2.25rem; padding: var(--s1) var(--s2); }
+.result-unit { color: var(--muted); font-size: .9375rem; }
+@media (max-width: 640px) {
+  .result-form { flex: 1 1 100%; }
+  .result-form .result-mode { flex: 1; }
+  .day-nav .btn { flex: 1; }
+}
+.row-title { display: block; font-weight: 600; overflow-wrap: anywhere; }
+.row-meta { display: block; font-size: .875rem; color: var(--muted); }

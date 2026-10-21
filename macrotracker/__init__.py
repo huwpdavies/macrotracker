@@ -27,12 +27,14 @@ def create_app(config_object=Config):
     from .blueprints.dashboard import bp as dashboard_bp
     from .blueprints.foods import bp as foods_bp
     from .blueprints.goals import bp as goals_bp
+    from .blueprints.log import bp as log_bp
     from .blueprints.meals import bp as meals_bp
 
     app.register_blueprint(dashboard_bp)
     app.register_blueprint(foods_bp)
     app.register_blueprint(meals_bp)
     app.register_blueprint(goals_bp)
+    app.register_blueprint(log_bp)
 
     @app.template_filter("num")
     def num(value, places=1):

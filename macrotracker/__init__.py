@@ -24,6 +24,10 @@ def create_app(config_object=Config):
 
     app.cli.add_command(seed_command)
 
+    from . import errors
+
+    errors.register(app)
+
     from .blueprints.dashboard import bp as dashboard_bp
     from .blueprints.foods import bp as foods_bp
     from .blueprints.goals import bp as goals_bp

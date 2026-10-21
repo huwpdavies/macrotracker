@@ -29,3 +29,11 @@ def test_quantity_from_servings():
 def test_calories_scale_with_serving():
     assert nutrition.macros_per_serving(TUNA)["calories_kcal"] == Decimal("115.5")
     assert nutrition.macros_per_serving(AVOCADO)["calories_kcal"] == 125
+
+
+def test_total_for_items_and_per_serving():
+    items = [SimpleNamespace(food=TUNA, quantity=105), SimpleNamespace(food=AVOCADO, quantity=Decimal("0.5"))]
+    total = nutrition.total_for_items(items)
+    assert total["calories_kcal"] == Decimal("240.5")
+    assert total["protein_g"] == Decimal("27.25")
+    assert nutrition.divide_macros(total, 2)["calories_kcal"] == Decimal("120.25")

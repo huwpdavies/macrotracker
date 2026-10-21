@@ -1,0 +1,19 @@
+{# One ingredient row in the meal form. Expects `row` (food_id, amount, mode) and `foods`. #}
+<div class="item-row">
+  <select name="item_food_id" aria-label="Food" class="item-food">
+    <option value="">Choose a food…</option>
+    {% for food in foods %}
+      <option value="{{ food.id }}" {{ 'selected' if row.food_id == food.id|string }}>
+        {{ '★ ' if food.is_favourite }}{{ food.name }} ({{ food.unit }})
+      </option>
+    {% endfor %}
+  </select>
+  <input type="number" name="item_amount" value="{{ row.amount }}" min="0" step="any"
+         inputmode="decimal" aria-label="Amount" class="item-amount">
+  <select name="item_mode" aria-label="Amount is in" class="item-mode">
+    <option value="servings" {{ 'selected' if row.mode == 'servings' }}>servings</option>
+    <option value="amount" {{ 'selected' if row.mode == 'amount' }}>amount</option>
+  </select>
+  <button type="button" class="icon-btn" aria-label="Remove ingredient" title="Remove"
+          hx-on:click="var d = this.closest('#meal-fields'); this.closest('.item-row').remove(); htmx.trigger(d, 'input');">✕</button>
+</div>

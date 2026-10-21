@@ -1,0 +1,23 @@
+{# Shared columns for the food and meal tables, so both lists read the same way. #}
+{% macro nutrient_headers() %}
+  <th scope="col" class="num">kcal</th>
+  <th scope="col" class="num"><span class="short" aria-hidden="true">P</span><span class="long">Protein</span></th>
+  <th scope="col" class="num"><span class="short" aria-hidden="true">C</span><span class="long">Carbs</span></th>
+  <th scope="col" class="num"><span class="short" aria-hidden="true">F</span><span class="long">Fat</span></th>
+  <th scope="col" class="num"><span class="short" aria-hidden="true">Fb</span><span class="long">Fibre</span></th>
+  <th scope="col" class="num"><span class="short" aria-hidden="true">Na</span><span class="long">Salt</span></th>
+{% endmacro %}
+{% macro nutrient_cells(m) %}
+  <td class="num kcal-col">{{ m.calories_kcal|num(0) }}</td>
+  <td class="num">{{ m.protein_g|num }}</td>
+  <td class="num">{{ m.carbs_g|num }}</td>
+  <td class="num">{{ m.fat_g|num }}</td>
+  <td class="num">{{ m.fibre_g|num }}</td>
+  <td class="num">{{ m.salt_g|num(2) }}</td>
+{% endmacro %}
+{% macro star(item, url, target, include=None) %}
+  <button type="button" class="star{{ ' on' if item.is_favourite }}" hx-post="{{ url }}" hx-target="{{ target }}"
+          {% if include %}hx-include="{{ include }}"{% endif %}
+          aria-label="{{ 'Remove from favourites' if item.is_favourite else 'Add to favourites' }}"
+          title="{{ 'Unfavourite' if item.is_favourite else 'Favourite' }}">{{ '★' if item.is_favourite else '☆' }}</button>
+{% endmacro %}

@@ -26,3 +26,23 @@
 - Changed: calories are typed from the label and stored (`calories_kcal` on foods, goals, log entries); brand removed; favourite stars on foods (and a column on meals for Phase 4); paste-a-label autofill; compact form layout.
 - Concepts: a migration can change existing data too (we backfilled calories with `op.execute`); `server_default` lets a NOT NULL column be added to a table that already has rows; pure-Python parsing in `services/label_parser.py` is easy to test, while a small JS file just copies the result into the inputs; `hx-headers` on `<body>` sends the CSRF token with every HTMX POST.
 - Files to read: `macrotracker/services/label_parser.py`, `public/js/food-form.js`, `macrotracker/templates/foods/form.html`, `migrations/versions/03d1e472b24e_*.py`.
+
+## Phase 4: Meals
+- Built: meal list/detail/create/edit/delete, ingredient rows you add and remove without a page reload, live totals and per-serving totals, favourite stars, `servings` column on meals.
+- Concepts: one-to-many (`meal.items`, `item.food`; `cascade="all, delete-orphan"` removes items with their meal); a variable number of form rows is read with `request.form.getlist()` instead of a WTForms FieldList (plainer); HTMX partials (`/meals/row` returns one row, `/meals/preview` returns totals); `{% include %}` reuses the row and nutrient-chip fragments; htmx won't send a `<form>` that fails browser validation, so the `hx-` attributes sit on a wrapper div; an app-level check (food in a meal?) gives a friendly message and the foreign key is the safety net.
+- Files to read: `macrotracker/blueprints/meals.py`, `macrotracker/templates/meals/form.html`, `macrotracker/templates/partials/_meal_item_row.html`, `macrotracker/services/nutrition.py`.
+
+## Food page redesign (view and edit share one layout)
+- Changed: the food detail page and the edit form now render the same `foods/_sheet.html` (a flag, `editing`, switches text for inputs), so they look identical; the food list is a table with one column per nutrient (per typical serving).
+- Concepts: one template included from two pages with a different variable set in each (`{% set editing = True %}`); Jinja macros for repeated cells; responsive tables (`overflow-x: auto`, short headers and a hidden column on narrow screens, with `aria-hidden` on the short labels); tidying `Decimal`s for display (`256.00` -> `256`) in the route before the form renders.
+- Files to read: `macrotracker/templates/foods/_sheet.html`, `macrotracker/templates/partials/_food_rows.html`, the "Food sheet" and "Food list table" sections of `public/css/main.css`.
+
+## Full visual redesign (modern, grey and blue)
+- Changed: replaced the sandy/playful look with a clean system: light grey page, white cards, one blue accent, Inter font, one type scale and spacing scale. Top bar on desktop, bottom tab bar on phones. No per-nutrient colours (labels carry the meaning).
+- Concepts: design tokens as CSS variables in `:root`; the same `<nav>` is a top bar or a fixed bottom bar purely through a media query; component classes (`.btn`, `.card`, `.rows`, `.field`) reused across pages instead of one-off styles; a Jinja macro in `base.html` builds the nav links and marks the current page with `aria-current`; `request.blueprint` tells the template which section is active; tap targets are at least 44px and focus rings are visible.
+- Files to read: `public/css/main.css` (sections 1 to 13), `macrotracker/templates/base.html`.
+
+## Redesign 2: ivory and navy, one set of components
+- Changed: ivory paper background with a fine grain (an SVG noise filter in a CSS variable, no image file), navy for text, top bar, bottom tab bar and buttons; Fraunces serif for headings, Inter for everything else. Every page now uses the same parts: page header (eyebrow + title), sections with one heading style, nutrient tiles (calories in navy), and one table style for both foods and meals. Meal pages now share a view/edit sheet like foods.
+- Concepts: shared Jinja macros imported with `{% from "partials/_table_macros.html" import ... %}` so two tables can't drift apart; one `_nutrients.html` partial replaces three different nutrient displays; CSS specificity (`input[type=text]` beat `.title-input` until the selector became `input.title-input`); `:has()` to adjust a grid based on the tile that follows.
+- Files to read: `public/css/main.css`, `macrotracker/templates/partials/_nutrients.html`, `macrotracker/templates/partials/_table_macros.html`, `macrotracker/templates/meals/_sheet.html`.

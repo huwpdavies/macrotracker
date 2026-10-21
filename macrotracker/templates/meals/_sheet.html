@@ -1,0 +1,71 @@
+{# One layout for a meal, used by the meal page (editing=False) and the add/edit form (editing=True). #}
+<header class="page-head">
+  <div>
+    <p class="eyebrow">Meal</p>
+    {% if editing %}
+      <label for="{{ form.name.id }}" class="sr-only">Meal name</label>
+      {{ form.name(class_="title-input", placeholder="Meal name", autocomplete="off") }}
+    {% else %}
+      <h1>{{ meal.name }}</h1>
+    {% endif %}
+  </div>
+</header>
+
+{% if editing and form.errors %}
+  <ul class="errors">
+    {% for field in form %}{% for error in field.errors %}<li>{{ field.label.text }}: {{ error }}</li>{% endfor %}{% endfor %}
+  </ul>
+{% endif %}
+
+<section class="section">
+  <div class="section-head"><h2>Details</h2></div>
+  <div class="facts">
+    {% if editing %}
+      <label class="tile" for="{{ form.servings.id }}">
+        <span class="tile-label">Makes</span>
+        <span class="tile-line">{{ form.servings(class_="tile-input", inputmode="decimal") }}<small>servings</small></span>
+      </label>
+      <label class="tile wide" for="{{ form.notes.id }}">
+        <span class="tile-label">Notes (optional)</span>
+        {{ form.notes(class_="tile-input text", placeholder="e.g. quick lunch") }}
+      </label>
+    {% else %}
+      <div class="tile">
+        <span class="tile-label">Makes</span>
+        <span class="tile-line"><span class="tile-value">{{ meal.servings|num(2) }}</span><small>{{ "serving" if meal.servings == 1 else "servings" }}</small></span>
+      </div>
+      <div class="tile wide">
+        <span class="tile-label">Notes</span>
+        <span class="tile-text">{{ meal.notes or "—" }}</span>
+      </div>
+    {% endif %}
+  </div>
+</section>
+
+<section class="section">
+  <div class="section-head">
+    <h2>Ingredients</h2>
+    {% if editing %}<p class="section-sub">a number of servings, or an exact amount in the food's unit</p>{% endif %}
+  </div>
+  {% if editing %}
+    <div class="list" id="item-rows">
+      {% for row in rows %}{% include "partials/_meal_item_row.html" %}{% endfor %}
+    </div>
+    <button type="button" class="btn btn-secondary add-row"
+            hx-get="{{ url_for('meals.row') }}" hx-target="#item-rows" hx-swap="beforeend">Add ingredient</button>
+  {% else %}
+    <ul class="list">
+      {% for item, macros in lines %}
+        <li>
+          <a href="{{ url_for('foods.detail', food_id=item.food.id) }}" class="grow">{{ item.food.name }}</a>
+          <span class="amount">{{ item.quantity|num(2) }} {{ item.food.unit }}</span>
+          <span class="kcal">{{ macros.calories_kcal|num(0) }} kcal</span>
+        </li>
+      {% endfor %}
+    </ul>
+  {% endif %}
+</section>
+
+<div id="totals" aria-live="polite">
+  {% if not editing %}{% include "partials/_meal_totals.html" %}{% endif %}
+</div>

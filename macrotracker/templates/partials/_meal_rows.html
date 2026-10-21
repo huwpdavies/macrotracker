@@ -1,0 +1,34 @@
+{% from "partials/_table_macros.html" import nutrient_headers, nutrient_cells, star %}
+{% if meals %}
+  <div class="table-wrap">
+    <table class="data-table">
+      <caption>Grams per serving, except kcal. On phones: P protein, C carbs, F fat, Fb fibre, Na salt.</caption>
+      <thead>
+        <tr>
+          <th scope="col" class="name-col">Meal</th>
+          <th scope="col" class="serving-col">Serves</th>
+          {{ nutrient_headers() }}
+        </tr>
+      </thead>
+      <tbody>
+        {% for meal in meals %}
+          <tr>
+            <th scope="row" class="name-col">
+              <div class="name-cell">
+                {{ star(meal, url_for('meals.favourite', meal_id=meal.id), '#meal-list') }}
+                <a href="{{ url_for('meals.detail', meal_id=meal.id) }}">{{ meal.name }}</a>
+              </div>
+            </th>
+            <td class="muted serving-col">{{ meal.servings|num(2) }}</td>
+            {{ nutrient_cells(per_serving[meal.id]) }}
+          </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+{% else %}
+  <div class="empty">
+    <p>No meals yet. A meal is a group of foods you often eat together.</p>
+    <a class="btn btn-primary" href="{{ url_for('meals.new') }}">Add your first meal</a>
+  </div>
+{% endif %}

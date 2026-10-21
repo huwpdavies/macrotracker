@@ -10,11 +10,11 @@ def _app():
     return app
 
 
-def test_home_page_says_hello():
+def test_home_page_loads():
     client = _app().test_client()
     resp = client.get("/")
     assert resp.status_code == 200
-    assert b"Hello, Macro Tracker" in resp.data
+    assert b"Macro Tracker" in resp.data
     assert b'name="robots" content="noindex"' in resp.data
 
 

@@ -1,19 +1,36 @@
-{% if foods %}
-  <ul class="rows">
-    {% for food in foods %}
-      <li>
-        <button type="button" class="star{{ ' on' if food.is_favourite }}"
-                hx-post="{{ url_for('foods.favourite', food_id=food.id) }}"
-                hx-include="[name=q]" hx-target="#food-list"
-                aria-label="{{ 'Remove from favourites' if food.is_favourite else 'Add to favourites' }}"
-                title="{{ 'Unfavourite' if food.is_favourite else 'Favourite' }}">{{ '★' if food.is_favourite else '☆' }}</button>
-        <a href="{{ url_for('foods.detail', food_id=food.id) }}" class="grow"><strong>{{ food.name }}</strong></a>
-        <span class="muted">{{ food.serving_label or (food.serving_size|num ~ ' ' ~ food.unit) }}</span>
-      </li>
-    {% endfor %}
-  </ul>
+{% from "partials/_table_macros.html" import nutrient_headers, nutrient_cells, star %}
+{% if rows %}
+  <div class="table-wrap">
+    <table class="data-table">
+      <caption>Grams per typical serving, except kcal. On phones: P protein, C carbs, F fat, Fb fibre, Na salt.</caption>
+      <thead>
+        <tr>
+          <th scope="col" class="name-col">Food</th>
+          <th scope="col" class="serving-col">Serving</th>
+          {{ nutrient_headers() }}
+        </tr>
+      </thead>
+      <tbody>
+        {% for food, m in rows %}
+          <tr>
+            <th scope="row" class="name-col">
+              <div class="name-cell">
+                {{ star(food, url_for('foods.favourite', food_id=food.id), '#food-list', '[name=q]') }}
+                <a href="{{ url_for('foods.detail', food_id=food.id) }}">{{ food.name }}</a>
+              </div>
+            </th>
+            <td class="muted serving-col">{{ food.serving_label or (food.serving_size|num ~ ' ' ~ food.unit) }}</td>
+            {{ nutrient_cells(m) }}
+          </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
 {% elif q %}
-  <p class="muted">No foods match "{{ q }}".</p>
+  <p class="empty-inline">No foods match "{{ q }}".</p>
 {% else %}
-  <p class="muted">No foods yet. <a href="{{ url_for('foods.new') }}">Add your first food</a>.</p>
+  <div class="empty">
+    <p>Your food library is empty.</p>
+    <a class="btn btn-primary" href="{{ url_for('foods.new') }}">Add your first food</a>
+  </div>
 {% endif %}

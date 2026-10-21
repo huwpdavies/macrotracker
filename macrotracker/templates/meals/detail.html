@@ -1,0 +1,17 @@
+{% extends "base.html" %}
+{% block title %}{{ meal.name }} · Macro Tracker{% endblock %}
+{% block content %}
+  <a class="back" href="{{ url_for('meals.index') }}">← Meals</a>
+  {% set editing = False %}
+  {% include "meals/_sheet.html" %}
+
+  <div class="actions">
+    <a class="btn btn-primary" href="{{ url_for('meals.edit', meal_id=meal.id) }}">Edit meal</a>
+    <span class="spacer"></span>
+    <form method="post" action="{{ url_for('meals.delete', meal_id=meal.id) }}" class="inline"
+          onsubmit="return confirm('Delete {{ meal.name|replace("'", "") }}?')">
+      <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+      <button type="submit" class="btn btn-danger">Delete</button>
+    </form>
+  </div>
+{% endblock %}

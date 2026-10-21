@@ -7,7 +7,7 @@ from sqlalchemy.exc import IntegrityError
 
 from ..extensions import db
 from ..forms import FoodForm
-from ..models import Food
+from ..models import Food, MealItem
 from ..services import nutrition
 from ..services.label_parser import parse_label
 
@@ -19,6 +19,9 @@ FIELDS = ["name", "unit", "basis_amount", "calories_kcal", "protein_g", "carbs_g
 
 def _make_form(food=None):
     form = FoodForm(obj=food)
+    if food is not None and request.method == "GET":
+        for field in nutrition.NUTRIENTS + ("basis_amount", "serving_size"):
+            getattr(form, field).data = nutrition.tidy(getattr(form, field).data)
     form.unit.choices = [(u, u) for u in current_app.config["UNITS"]]
     return form
 
@@ -36,19 +39,19 @@ def _copy_form_to_food(form, food):
 @bp.route("/")
 def index():
     q = request.args.get("q", "").strip()
-    foods = _search(q)
+    rows = _search(q)
     # HTMX sends this header; it only wants the list fragment, not the whole page.
     if request.headers.get("HX-Request"):
-        return render_template("partials/_food_rows.html", foods=foods, q=q)
-    return render_template("foods/list.html", foods=foods, q=q)
+        return render_template("partials/_food_rows.html", rows=rows, q=q)
+    return render_template("foods/list.html", rows=rows, q=q)
 
 
 def _search(q):
-    """Favourites first, then alphabetical."""
+    """(food, macros per typical serving) pairs: favourites first, then alphabetical."""
     query = Food.query.order_by(Food.is_favourite.desc(), Food.name)
     if q:
         query = query.filter(Food.name.ilike(f"%{q}%"))
-    return query.all()
+    return [(food, nutrition.macros_per_serving(food)) for food in query.all()]
 
 
 @bp.route("/<int:food_id>/favourite", methods=["POST"])
@@ -57,7 +60,7 @@ def favourite(food_id):
     food.is_favourite = not food.is_favourite
     db.session.commit()
     q = request.form.get("q", "").strip()
-    return render_template("partials/_food_rows.html", foods=_search(q), q=q)
+    return render_template("partials/_food_rows.html", rows=_search(q), q=q)
 
 
 @bp.route("/parse-label", methods=["POST"])
@@ -105,11 +108,16 @@ def edit(food_id):
 @bp.route("/<int:food_id>/delete", methods=["POST"])
 def delete(food_id):
     food = db.get_or_404(Food, food_id)
+    in_use = MealItem.query.filter_by(food_id=food_id).first() is not None
     try:
-        db.session.delete(food)
-        db.session.commit()
+        if not in_use:
+            db.session.delete(food)
+            db.session.commit()
     except IntegrityError:
         db.session.rollback()
+        in_use = True
+    if in_use:
+        # The check above is the friendly path; the database foreign key is the safety net.
         flash(f"{food.name} is used in a meal, so it can't be deleted yet.", "error")
         return redirect(url_for("foods.detail", food_id=food_id))
     flash(f"Deleted {food.name}.", "success")

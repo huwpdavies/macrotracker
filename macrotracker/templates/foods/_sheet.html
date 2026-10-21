@@ -1,0 +1,97 @@
+{# One layout for a food, used by the food page (editing=False) and the add/edit form (editing=True),
+   so the two look the same; the only difference is that the values are inputs when editing. #}
+{% macro tile(key, label, unit, places=1, extra="") %}
+  {% if editing %}
+    <label class="tile {{ extra }}" for="{{ form[key].id }}">
+      <span class="tile-label">{{ label }}</span>
+      <span class="tile-line">{{ form[key](class_="tile-input", inputmode="decimal") }}<small>{{ unit }}</small></span>
+    </label>
+  {% else %}
+    <div class="tile {{ extra }}">
+      <span class="tile-label">{{ label }}</span>
+      <span class="tile-line"><span class="tile-value">{{ food[key]|num(places) }}</span><small>{{ unit }}</small></span>
+    </div>
+  {% endif %}
+{% endmacro %}
+
+<header class="page-head">
+  <div>
+    <p class="eyebrow">Food</p>
+    {% if editing %}
+      <label for="{{ form.name.id }}" class="sr-only">Food name</label>
+      {{ form.name(class_="title-input", placeholder="Food name", autocomplete="off") }}
+    {% else %}
+      <h1>{{ food.name }}</h1>
+    {% endif %}
+  </div>
+</header>
+
+{% if editing and form.errors %}
+  <ul class="errors">
+    {% for field in form %}{% for error in field.errors %}<li>{{ field.label.text }}: {{ error }}</li>{% endfor %}{% endfor %}
+  </ul>
+{% endif %}
+
+<section class="section">
+  <div class="section-head">
+    <h2>Nutrition</h2>
+    <p class="section-sub">
+      as on the label, per
+      {% if editing %}
+        {{ form.basis_amount(class_="inline-input", inputmode="decimal", **{"aria-label": "Per amount"}) }}
+        {{ form.unit(class_="inline-select", **{"aria-label": "Unit"}) }}
+      {% else %}
+        <strong>{{ food.basis_amount|num(2) }} {{ food.unit }}</strong>
+      {% endif %}
+    </p>
+  </div>
+  <div class="nutrients">
+    {{ tile("calories_kcal", "Calories", "kcal", 0, "tile-kcal") }}
+    {{ tile("protein_g", "Protein", "g") }}
+    {{ tile("carbs_g", "Carbs", "g") }}
+    {{ tile("fat_g", "Fat", "g") }}
+    {{ tile("fibre_g", "Fibre", "g") }}
+    {{ tile("salt_g", "Salt", "g", 2) }}
+  </div>
+</section>
+
+<section class="section">
+  <div class="section-head">
+    <h2>Typical serving</h2>
+    <p class="section-sub">what you usually eat in one go</p>
+  </div>
+  <div class="facts">
+    {% if editing %}
+      <label class="tile" for="{{ form.serving_size.id }}">
+        <span class="tile-label">Size</span>
+        <span class="tile-line">{{ form.serving_size(class_="tile-input", inputmode="decimal") }}<small data-unit-label>{{ form.unit.data or 'g' }}</small></span>
+      </label>
+      <label class="tile wide" for="{{ form.serving_label.id }}">
+        <span class="tile-label">Label (optional)</span>
+        {{ form.serving_label(class_="tile-input text", placeholder="e.g. 1 can, 1/2 avocado") }}
+      </label>
+    {% else %}
+      <div class="tile">
+        <span class="tile-label">Size</span>
+        <span class="tile-line"><span class="tile-value">{{ food.serving_size|num(2) }}</span><small>{{ food.unit }}</small></span>
+      </div>
+      <div class="tile wide">
+        <span class="tile-label">Label</span>
+        <span class="tile-text">{{ food.serving_label or "—" }}</span>
+      </div>
+    {% endif %}
+  </div>
+</section>
+
+<section class="section">
+  <div class="section-head">
+    <h2>One serving gives</h2>
+  </div>
+  <div id="preview" aria-live="polite">
+    {% if not editing %}
+      {% with macros = per_serving, serving_size = food.serving_size, unit = food.unit %}
+        {% include "partials/_macro_preview.html" %}
+      {% endwith %}
+    {% endif %}
+  </div>
+</section>

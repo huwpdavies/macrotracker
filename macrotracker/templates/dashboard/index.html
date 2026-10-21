@@ -27,10 +27,10 @@
         <span class="tile-label">Meals</span>
         <span class="tile-line"><span class="tile-value">{{ meal_count }}</span></span>
       </a>
-      <div class="tile">
+      <a class="tile" href="{{ url_for('goals.index') }}">
         <span class="tile-label">Active goal</span>
         <span class="tile-text">{{ active_goal.name if active_goal else "None yet" }}</span>
-      </div>
+      </a>
     </div>
   </section>
 {% endblock %}

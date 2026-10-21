@@ -115,7 +115,8 @@ a.tile:hover { border-color: var(--navy); }
 .tile-kcal .tile-label, .tile-kcal .tile-line small { color: var(--on-navy-muted); }
 .nutrients.compact { grid-template-columns: repeat(6, 1fr); gap: var(--s2); }
 .nutrients.compact .tile { padding: var(--s2) var(--s3); box-shadow: none; }
-.nutrients.compact .tile-value { font-size: 1.125rem; }
+.nutrients.compact .tile-value { font-size: 1.125rem; white-space: nowrap; overflow-wrap: normal; }
+.nutrients.compact .tile-line { flex-wrap: nowrap; }
 .nutrients.compact .tile-label { font-size: .6875rem; }
 
 /* Tile inputs (edit mode): same tile, the value becomes a field */
@@ -224,3 +225,19 @@ input.title-input::placeholder { color: var(--line-strong); }
 
 /* 11 Reduced motion ------------------------------------------------------- */
 @media (prefers-reduced-motion: reduce) { * { transition: none !important; animation: none !important; } }
+
+/* Goals: active badge, small button, radio choices */
+.badge { display: inline-block; padding: 2px var(--s2); border-radius: 999px; background: var(--navy); color: var(--on-navy);
+  font-size: .6875rem; font-weight: 600; letter-spacing: .08em; text-transform: uppercase; vertical-align: middle; }
+.btn-sm { min-height: 2.25rem; padding: 0 var(--s3); font-size: .8125rem; }
+.goal-cards { display: grid; gap: var(--s4); }
+.goal-card { padding: var(--s4) var(--s4) var(--s3); }
+.goal-card.is-active { border-color: var(--navy); box-shadow: 0 0 0 1px var(--navy), var(--shadow); }
+.goal-card-head { display: flex; align-items: center; gap: var(--s3); margin-bottom: var(--s3); }
+.goal-card-head a { text-decoration: none; }
+.goal-card-head a:hover { text-decoration: underline; }
+.goal-card-actions { display: flex; flex-wrap: wrap; align-items: center; gap: var(--s2); margin-top: var(--s3); padding-top: var(--s3); border-top: 1px solid var(--line); }
+.goal-card-actions .spacer { flex: 1; }
+.choices > li { padding: 0; }
+.choice { display: flex; align-items: center; gap: var(--s3); width: 100%; padding: var(--s3) var(--s4); cursor: pointer; }
+.choice input { width: 1.15rem; height: 1.15rem; accent-color: var(--navy); }

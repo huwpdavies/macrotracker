@@ -1,0 +1,49 @@
+{% extends "base.html" %}
+{% block title %}Goals · Macro Tracker{% endblock %}
+{% block content %}
+  <header class="page-head">
+    <div>
+      <p class="eyebrow">Targets</p>
+      <h1>Goals</h1>
+    </div>
+    <a class="btn btn-primary" href="{{ url_for('goals.new') }}">Add goal</a>
+  </header>
+  <p class="lede">Daily targets for each nutrient. One goal is active at a time; the dashboard compares your day with it.</p>
+
+  {% if goals %}
+    <div class="goal-cards">
+      {% for goal in goals %}
+        <article class="card goal-card{{ ' is-active' if goal.is_active }}" aria-labelledby="goal-{{ goal.id }}">
+          <header class="goal-card-head">
+            <h2 id="goal-{{ goal.id }}"><a href="{{ url_for('goals.detail', goal_id=goal.id) }}">{{ goal.name }}</a></h2>
+            {% if goal.is_active %}<span class="badge">Active</span>{% endif %}
+          </header>
+
+          {% with macros = goal, compact = True %}{% include "partials/_nutrients.html" %}{% endwith %}
+
+          <div class="goal-card-actions">
+            {% if not goal.is_active %}
+              <form method="post" action="{{ url_for('goals.activate', goal_id=goal.id) }}" class="inline">
+                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                <button type="submit" class="btn btn-primary btn-sm">Make active</button>
+              </form>
+            {% endif %}
+            <a class="btn btn-secondary btn-sm" href="{{ url_for('goals.edit', goal_id=goal.id) }}"
+               aria-label="Edit {{ goal.name }}">Edit</a>
+            <span class="spacer"></span>
+            <form method="post" action="{{ url_for('goals.delete', goal_id=goal.id) }}" class="inline"
+                  onsubmit="return confirm('Delete {{ goal.name|replace("'", "") }}?')">
+              <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+              <button type="submit" class="btn btn-danger btn-sm" aria-label="Delete {{ goal.name }}">Delete</button>
+            </form>
+          </div>
+        </article>
+      {% endfor %}
+    </div>
+  {% else %}
+    <div class="empty">
+      <p>No goals yet. A goal sets your daily targets for each nutrient.</p>
+      <a class="btn btn-primary" href="{{ url_for('goals.new') }}">Add your first goal</a>
+    </div>
+  {% endif %}
+{% endblock %}

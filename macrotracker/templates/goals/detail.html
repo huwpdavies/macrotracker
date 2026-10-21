@@ -1,0 +1,24 @@
+{% extends "base.html" %}
+{% block title %}{{ goal.name }} · Macro Tracker{% endblock %}
+{% block content %}
+  <a class="back" href="{{ url_for('goals.index') }}">← Goals</a>
+  {% set editing = False %}
+  {% include "goals/_sheet.html" %}
+
+  <div class="actions">
+    <a class="btn btn-primary" href="{{ url_for('goals.edit', goal_id=goal.id) }}">Edit goal</a>
+    {% if not goal.is_active %}
+      <form method="post" action="{{ url_for('goals.activate', goal_id=goal.id) }}" class="inline">
+        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+        <input type="hidden" name="next" value="{{ url_for('goals.detail', goal_id=goal.id) }}">
+        <button type="submit" class="btn btn-secondary">Make active</button>
+      </form>
+    {% endif %}
+    <span class="spacer"></span>
+    <form method="post" action="{{ url_for('goals.delete', goal_id=goal.id) }}" class="inline"
+          onsubmit="return confirm('Delete {{ goal.name|replace("'", "") }}?')">
+      <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+      <button type="submit" class="btn btn-danger">Delete</button>
+    </form>
+  </div>
+{% endblock %}

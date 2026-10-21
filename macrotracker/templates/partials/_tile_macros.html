@@ -1,0 +1,26 @@
+{# A nutrient tile that shows a value, or an input in the same spot when editing.
+   Imported by the food and goal sheets so both use exactly the same tile. #}
+{% macro field_tile(editing, form, obj, key, label, unit, places=1, extra="") %}
+  {% if editing %}
+    <label class="tile {{ extra }}" for="{{ form[key].id }}">
+      <span class="tile-label">{{ label }}</span>
+      <span class="tile-line">{{ form[key](class_="tile-input", inputmode="decimal") }}<small>{{ unit }}</small></span>
+    </label>
+  {% else %}
+    <div class="tile {{ extra }}">
+      <span class="tile-label">{{ label }}</span>
+      <span class="tile-line"><span class="tile-value">{{ obj[key]|num(places) }}</span><small>{{ unit }}</small></span>
+    </div>
+  {% endif %}
+{% endmacro %}
+
+{% macro nutrient_tiles(editing, form, obj, unit_suffix="") %}
+  <div class="nutrients">
+    {{ field_tile(editing, form, obj, "calories_kcal", "Calories", "kcal" ~ unit_suffix, 0, "tile-kcal") }}
+    {{ field_tile(editing, form, obj, "protein_g", "Protein", "g" ~ unit_suffix) }}
+    {{ field_tile(editing, form, obj, "carbs_g", "Carbs", "g" ~ unit_suffix) }}
+    {{ field_tile(editing, form, obj, "fat_g", "Fat", "g" ~ unit_suffix) }}
+    {{ field_tile(editing, form, obj, "fibre_g", "Fibre", "g" ~ unit_suffix) }}
+    {{ field_tile(editing, form, obj, "salt_g", "Salt", "g" ~ unit_suffix, 2) }}
+  </div>
+{% endmacro %}

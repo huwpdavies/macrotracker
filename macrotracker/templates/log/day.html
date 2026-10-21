@@ -38,22 +38,8 @@
       <h2>Eaten</h2>
       <p class="section-sub">{{ entries|length }} item{{ '' if entries|length == 1 else 's' }}</p>
     </div>
-    {% if entries %}
-      <ul class="list">
-        {% for entry in entries %}
-          <li>
-            <div class="grow">
-              <span class="row-title">{{ entry.description }}</span>
-              <span class="row-meta">{{ entry.quantity|num(2) }} {{ entry.unit }}{% if entry.meal_name %} · {{ entry.meal_name }}{% endif %}</span>
-            </div>
-            <span class="kcal">{{ entry.calories_kcal|num(0) }} kcal</span>
-            <a class="btn btn-secondary btn-sm" href="{{ url_for('log.edit_entry', entry_id=entry.id) }}"
-               aria-label="Edit {{ entry.description }}">Edit</a>
-          </li>
-        {% endfor %}
-      </ul>
-    {% else %}
-      <p class="empty-inline">Nothing logged {{ 'yet today' if is_today else 'for this day' }}. Search above to add your first item.</p>
-    {% endif %}
+    {% with empty_text = "Nothing logged " ~ ("yet today" if is_today else "for this day") ~ ". Search above to add your first item." %}
+      {% include "partials/_entries.html" %}
+    {% endwith %}
   </section>
 {% endblock %}

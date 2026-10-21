@@ -23,7 +23,10 @@ def parse_day(text):
 def day_label(day, today=None):
     today = today or today_london()
     names = {today: "Today", today - timedelta(days=1): "Yesterday", today + timedelta(days=1): "Tomorrow"}
-    return names.get(day, f"{day:%A} {day.day} {day:%B}")
+    if day in names:
+        return names[day]
+    # Only show the year when it isn't this year (the page then doesn't repeat the date underneath).
+    return f"{day:%A} {day.day} {day:%B}" if day.year == today.year else long_date(day)
 
 
 def long_date(day):

@@ -86,3 +86,13 @@ def test_edit_goal(client):
     client.post("/goals/new", data=FORM)
     client.post("/goals/1/edit", data={**FORM, "protein_g": "150"})
     assert db.session.get(Goal, 1).protein_g == 150
+
+
+def test_list_has_edit_and_delete_on_every_goal(client):
+    client.post("/goals/new", data={**FORM, "name": "A"})
+    client.post("/goals/new", data={**FORM, "name": "B"})
+    html = client.get("/goals/").data
+    for goal_id, name in ((1, b"A"), (2, b"B")):
+        assert f'href="/goals/{goal_id}/edit"'.encode() in html
+        assert f'action="/goals/{goal_id}/delete"'.encode() in html
+    assert html.count(b"Make active") == 1  # only the inactive goal

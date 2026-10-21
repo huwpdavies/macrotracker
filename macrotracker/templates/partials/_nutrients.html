@@ -1,0 +1,15 @@
+{# The standard nutrient tiles. Expects `macros` (from nutrition.macros_for); set `compact` for the small version. #}
+{% macro tile(label, value, unit, extra="") %}
+  <div class="tile {{ extra }}">
+    <span class="tile-label">{{ label }}</span>
+    <span class="tile-line"><span class="tile-value">{{ value }}</span><small>{{ unit }}</small></span>
+  </div>
+{% endmacro %}
+<div class="nutrients{{ ' compact' if compact }}">
+  {{ tile("Calories", macros.calories_kcal|num(0), "kcal", "tile-kcal") }}
+  {{ tile("Protein", macros.protein_g|num, "g") }}
+  {{ tile("Carbs", macros.carbs_g|num, "g") }}
+  {{ tile("Fat", macros.fat_g|num, "g") }}
+  {{ tile("Fibre", macros.fibre_g|num, "g") }}
+  {{ tile("Salt", macros.salt_g|num(2), "g") }}
+</div>

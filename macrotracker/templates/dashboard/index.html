@@ -1,12 +1,36 @@
 {% extends "base.html" %}
 {% block content %}
-  <div class="page-head"><h1>Macro Tracker</h1></div>
-  <p class="muted">Track your daily protein, carbs, fat, fibre and salt against a goal.</p>
+  <header class="page-head">
+    <div>
+      <p class="eyebrow">Welcome back</p>
+      <h1>Macro Tracker</h1>
+    </div>
+  </header>
 
-  <div class="home-grid">
-    <a class="home-tile" href="{{ url_for('foods.index') }}"><strong>{{ food_count }}</strong><span>Foods</span></a>
-    <a class="home-tile" href="{{ url_for('meals.index') }}"><strong>{{ meal_count }}</strong><span>Meals</span></a>
+  <div class="hero">
+    <h2>Build your library</h2>
+    <p>Add the foods you eat and group them into meals. Daily logging and your goal dashboard come next.</p>
+    <div class="row">
+      <a class="btn btn-light" href="{{ url_for('foods.new') }}">Add food</a>
+      <a class="btn btn-outline-light" href="{{ url_for('meals.new') }}">Add meal</a>
+    </div>
   </div>
 
-  <p class="hint">Active goal: {{ active_goal.name if active_goal else "none yet" }}. The daily dashboard arrives in a later phase.</p>
+  <section class="section">
+    <div class="section-head"><h2>At a glance</h2></div>
+    <div class="facts">
+      <a class="tile" href="{{ url_for('foods.index') }}">
+        <span class="tile-label">Foods</span>
+        <span class="tile-line"><span class="tile-value">{{ food_count }}</span></span>
+      </a>
+      <a class="tile" href="{{ url_for('meals.index') }}">
+        <span class="tile-label">Meals</span>
+        <span class="tile-line"><span class="tile-value">{{ meal_count }}</span></span>
+      </a>
+      <div class="tile">
+        <span class="tile-label">Active goal</span>
+        <span class="tile-text">{{ active_goal.name if active_goal else "None yet" }}</span>
+      </div>
+    </div>
+  </section>
 {% endblock %}

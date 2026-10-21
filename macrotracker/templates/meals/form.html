@@ -1,45 +1,19 @@
 {% extends "base.html" %}
-{% block title %}{{ 'Edit' if meal else 'New' }} meal · Macro Tracker{% endblock %}
+{% block title %}{{ 'Edit' if meal else 'Add' }} meal · Macro Tracker{% endblock %}
 {% block content %}
-  <a class="back" href="{{ url_for('meals.detail', meal_id=meal.id) if meal else url_for('meals.index') }}">← {{ 'Cancel' if meal else 'Meals' }}</a>
-  <h1 class="sheet-title">{{ 'Edit meal' if meal else 'New meal' }}</h1>
+  {% set editing = True %}
+  <a class="back" href="{{ url_for('meals.index') }}">← Meals</a>
 
-  {% macro field(f) %}
-    <div class="field">
-      <label for="{{ f.id }}">{{ f.label.text }}</label>
-      {{ f() }}
-      {% for error in f.errors %}<p class="error">{{ error }}</p>{% endfor %}
-    </div>
-  {% endmacro %}
-
-  {# Typing posts the form to /preview and HTMX swaps the reply into #totals. Save is a normal submit. #}
-  {# The hx- attributes sit on a div, not the form: htmx would refuse to send a form that fails browser validation. #}
-  <form method="post" class="form">
-    <div id="meal-fields" hx-post="{{ url_for('meals.preview') }}" hx-trigger="input delay:300ms, load"
-         hx-target="#totals">
-    {{ form.hidden_tag() }}
-    <div class="grid grid-2">
-      {{ field(form.name) }}
-      {{ field(form.servings) }}
-    </div>
-    {{ field(form.notes) }}
-
-    <fieldset>
-      <legend>Ingredients</legend>
-      <div id="item-rows">
-        {% for row in rows %}{% include "partials/_meal_item_row.html" %}{% endfor %}
+  {# Typing posts the fields to /preview and HTMX swaps the reply into #totals. Save is a normal submit.
+     The hx- attributes sit on a div, not the form: htmx would refuse to send a form that fails browser validation. #}
+  <form method="post">
+    <div id="meal-fields" hx-post="{{ url_for('meals.preview') }}" hx-trigger="input delay:300ms, load" hx-target="#totals">
+      {{ form.hidden_tag() }}
+      {% include "meals/_sheet.html" %}
+      <div class="actions">
+        <button type="submit" class="btn btn-primary">{{ 'Save changes' if meal else 'Add meal' }}</button>
+        <a class="btn btn-secondary" href="{{ url_for('meals.detail', meal_id=meal.id) if meal else url_for('meals.index') }}">Cancel</a>
       </div>
-      <button type="button" class="btn btn-secondary"
-              hx-get="{{ url_for('meals.row') }}" hx-target="#item-rows" hx-swap="beforeend">+ Add ingredient</button>
-      <p class="hint">Enter servings (the food's typical serving) or switch to "amount" for an exact quantity in the food's own unit (g, ml, unit…).</p>
-    </fieldset>
-
-    <div id="totals" class="card" aria-live="polite"></div>
-
-    <div class="actions">
-      <button type="submit" class="btn btn-primary">Save</button>
-      <a class="btn btn-secondary" href="{{ url_for('meals.detail', meal_id=meal.id) if meal else url_for('meals.index') }}">Cancel</a>
-    </div>
     </div>
   </form>
 {% endblock %}

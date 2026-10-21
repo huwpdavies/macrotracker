@@ -83,7 +83,8 @@ def detail(meal_id):
     meal = db.get_or_404(Meal, meal_id)
     total, per_serving = _summary(meal.items, meal.servings)
     lines = [(item, nutrition.macros_for(item.food, item.quantity)) for item in meal.items]
-    return render_template("meals/detail.html", meal=meal, lines=lines, total=total, per_serving=per_serving)
+    return render_template("meals/detail.html", meal=meal, lines=lines, total=total, per_serving=per_serving,
+                           servings=meal.servings, has_items=bool(meal.items))
 
 
 def _save(meal, form):

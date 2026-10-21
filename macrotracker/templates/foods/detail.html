@@ -6,7 +6,8 @@
   {% include "foods/_sheet.html" %}
 
   <div class="actions">
-    <a class="btn btn-primary" href="{{ url_for('foods.edit', food_id=food.id) }}">Edit</a>
+    <a class="btn btn-primary" href="{{ url_for('foods.edit', food_id=food.id) }}">Edit food</a>
+    <span class="spacer"></span>
     <form method="post" action="{{ url_for('foods.delete', food_id=food.id) }}" class="inline"
           onsubmit="return confirm('Delete {{ food.name|replace("'", "") }}?')">
       <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">

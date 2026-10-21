@@ -1,23 +1,23 @@
 {% extends "base.html" %}
-{% block title %}{{ 'Edit' if food else 'New' }} food · Macro Tracker{% endblock %}
+{% block title %}{{ 'Edit' if food else 'Add' }} food · Macro Tracker{% endblock %}
 {% block content %}
   {% set editing = True %}
-  <a class="back" href="{{ url_for('foods.detail', food_id=food.id) if food else url_for('foods.index') }}">← {{ 'Cancel' if food else 'Foods' }}</a>
+  <a class="back" href="{{ url_for('foods.index') }}">← Foods</a>
 
-  <details class="card paste">
-    <summary>Paste a nutrition label to auto-fill</summary>
-    <textarea id="label-text" rows="4" data-url="{{ url_for('foods.parse_label_text') }}"
-              placeholder="Paste the nutrition table text from a supermarket page…"></textarea>
-    <p id="label-result" class="muted" aria-live="polite"></p>
+  <details class="card quick-fill">
+    <summary>Quick fill: paste a nutrition label</summary>
+    <textarea id="label-text" rows="4" data-url="{{ url_for('foods.parse_label_text') }}" aria-label="Nutrition label text"
+              placeholder="Paste the nutrition table from a supermarket website"></textarea>
+    <p id="label-result" class="hint" aria-live="polite"></p>
   </details>
 
   {# The hx- attributes sit on a div, not the form: htmx would refuse to send a form that fails browser validation (e.g. empty name). #}
-  <form method="post" class="form">
+  <form method="post">
     <div hx-post="{{ url_for('foods.preview') }}" hx-trigger="input delay:300ms, load" hx-target="#preview">
       {{ form.hidden_tag() }}
       {% include "foods/_sheet.html" %}
       <div class="actions">
-        <button type="submit" class="btn btn-primary">Save</button>
+        <button type="submit" class="btn btn-primary">{{ 'Save changes' if food else 'Add food' }}</button>
         <a class="btn btn-secondary" href="{{ url_for('foods.detail', food_id=food.id) if food else url_for('foods.index') }}">Cancel</a>
       </div>
     </div>

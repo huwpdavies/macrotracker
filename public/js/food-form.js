@@ -1,5 +1,12 @@
 // Paste-a-label helper: sends pasted text to the server, which returns the numbers it found.
 (function () {
+  // Keep the serving size's unit text in step with the unit dropdown.
+  var unit = document.getElementById("unit");
+  var unitLabel = document.querySelector("[data-unit-label]");
+  if (unit && unitLabel) {
+    unit.addEventListener("change", function () { unitLabel.textContent = unit.value; });
+  }
+
   var box = document.getElementById("label-text");
   if (!box) return;
   var result = document.getElementById("label-result");
@@ -34,7 +41,7 @@
         var last;
         found.forEach(function (key) {
           var el = document.getElementById(key);
-          if (el) { el.value = data.values[key]; last = el; }
+          if (el) { el.value = data.values[key]; el.dispatchEvent(new Event("change")); last = el; }
         });
         if (last) last.dispatchEvent(new Event("input", { bubbles: true })); // refresh the preview
         var missing = data.missing.map(function (k) { return NAMES[k]; });

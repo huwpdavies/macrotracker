@@ -1,10 +1,15 @@
-{% if has_items %}
-  <strong>Whole recipe:</strong>
-  {% with macros = total %}{% include "partials/_nutrient_chips.html" %}{% endwith %}
-  {% if servings != 1 %}
-    <strong>Per serving (1 of {{ servings|num(2) }}):</strong>
-    {% with macros = per_serving %}{% include "partials/_nutrient_chips.html" %}{% endwith %}
-  {% endif %}
-{% else %}
-  <span class="muted">Add ingredients with amounts to see the totals.</span>
+{# Expects total, per_serving, servings, has_items. #}
+{% if servings != 1 and has_items %}
+  <section class="section">
+    <div class="section-head"><h2>Per serving</h2><p class="section-sub">1 of {{ servings|num(2) }}</p></div>
+    {% with macros = per_serving %}{% include "partials/_nutrients.html" %}{% endwith %}
+  </section>
 {% endif %}
+<section class="section">
+  <div class="section-head"><h2>Whole recipe</h2></div>
+  {% if has_items %}
+    {% with macros = total, compact = servings != 1 %}{% include "partials/_nutrients.html" %}{% endwith %}
+  {% else %}
+    <p class="empty-inline">Add ingredients with amounts to see the totals.</p>
+  {% endif %}
+</section>

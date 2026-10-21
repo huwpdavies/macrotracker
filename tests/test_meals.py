@@ -34,13 +34,13 @@ def test_create_meal_converts_servings_and_amounts(client):
     items = {i.food_id: i.quantity for i in MealItem.query.all()}
     assert items[1] == 105          # 1 serving of tuna = 105 g
     assert items[2] == 0.5          # raw amount: half an avocado
-    assert b"241 kcal" in resp.data  # 115.5 + 125 = 240.5 kcal, rounded half-up for display
+    assert b'<span class="tile-value">241</span>' in resp.data  # 115.5 + 125 = 240.5 kcal, rounded half-up
 
 
 def test_per_serving_uses_recipe_servings(client):
     resp = client.post("/meals/new", data=meal_data(servings="2"), follow_redirects=True)
-    assert b"Per serving (1 of 2)" in resp.data
-    assert b"120" in resp.data      # 240.5 / 2 = 120.25 kcal
+    assert b"1 of 2" in resp.data
+    assert b'<span class="tile-value">120</span>' in resp.data  # 240.5 / 2 = 120.25 kcal
 
 
 def test_meal_needs_an_ingredient(client):

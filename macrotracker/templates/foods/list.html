@@ -2,13 +2,17 @@
 {% block title %}Foods · Macro Tracker{% endblock %}
 {% block main_class %}wide{% endblock %}
 {% block content %}
-  <div class="page-head">
-    <h1>Foods</h1>
+  <header class="page-head">
+    <div>
+      <p class="eyebrow">Library</p>
+      <h1>Foods</h1>
+    </div>
     <a class="btn btn-primary" href="{{ url_for('foods.new') }}">Add food</a>
+  </header>
+  <div class="search">
+    <input type="search" name="q" value="{{ q }}" placeholder="Search foods" aria-label="Search foods"
+           hx-get="{{ url_for('foods.index') }}" hx-trigger="input changed delay:300ms, search" hx-target="#food-list">
   </div>
-  <input type="search" name="q" value="{{ q }}" placeholder="Search foods…" aria-label="Search foods"
-         hx-get="{{ url_for('foods.index') }}" hx-trigger="input changed delay:300ms, search"
-         hx-target="#food-list">
   <div id="food-list">
     {% include "partials/_food_rows.html" %}
   </div>

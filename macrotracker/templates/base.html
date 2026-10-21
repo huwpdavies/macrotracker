@@ -4,11 +4,11 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
   <meta name="robots" content="noindex">
-  <meta name="theme-color" content="#F4F5F7">
+  <meta name="theme-color" content="#1E2A47">
   <title>{% block title %}Macro Tracker{% endblock %}</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap">
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,600&family=Inter:wght@400;500;600;700&display=swap">
   <link rel="stylesheet" href="/css/main.css">
   <script src="/js/htmx.min.js" defer></script>
 </head>
@@ -21,7 +21,7 @@
 
   <header class="topbar">
     <div class="topbar-inner">
-      <a class="brand" href="{{ url_for('dashboard.index') }}">Macro<span>Tracker</span></a>
+      <a class="brand" href="{{ url_for('dashboard.index') }}">Macro Tracker</a>
       <nav class="tabs" aria-label="Main">
         {{ tab("dashboard.index", "dashboard", "Home", '<path d="M3 11l9-8 9 8"/><path d="M5 10v10h14V10"/>') }}
         {{ tab("foods.index", "foods", "Foods", '<path d="M12 7c-4-3-9 0-8 6 1 5 4 8 8 6 4 2 7-1 8-6 1-6-4-9-8-6z"/><path d="M12 7c0-2 1-4 3-5"/>') }}

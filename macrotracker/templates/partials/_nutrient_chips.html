@@ -1,9 +1,0 @@
-{# Expects `macros` (a dict from nutrition.macros_for). #}
-<ul class="chips">
-  <li class="chip-cal">{{ macros.calories_kcal|num(0) }} kcal</li>
-  <li class="chip-pro">Protein {{ macros.protein_g|num }} g</li>
-  <li class="chip-car">Carbs {{ macros.carbs_g|num }} g</li>
-  <li class="chip-fat">Fat {{ macros.fat_g|num }} g</li>
-  <li class="chip-fib">Fibre {{ macros.fibre_g|num }} g</li>
-  <li class="chip-sal">Salt {{ macros.salt_g|num(2) }} g</li>
-</ul>

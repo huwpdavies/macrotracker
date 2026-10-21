@@ -21,7 +21,7 @@ def client():
 def test_create_food_and_see_per_serving(client):
     resp = client.post("/foods/new", data=FORM, follow_redirects=True)
     assert resp.status_code == 200
-    assert b"26.3 g" in resp.data  # 26.25 g protein per can, rounded for display
+    assert b'<span class="tile-value">26.3</span>' in resp.data  # 26.25 g protein per can, rounded for display
     assert Food.query.count() == 1
 
 
@@ -50,7 +50,7 @@ def test_search_returns_fragment_for_htmx(client):
 
 def test_preview_fragment(client):
     resp = client.post("/foods/preview", data=FORM)
-    assert b"26.3 g" in resp.data
+    assert b'<span class="tile-value">26.3</span>' in resp.data
 
 
 def test_favourite_toggle_and_sort(client):

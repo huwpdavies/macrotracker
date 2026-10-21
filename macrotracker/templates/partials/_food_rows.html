@@ -1,17 +1,13 @@
+{% from "partials/_table_macros.html" import nutrient_headers, nutrient_cells, star %}
 {% if rows %}
   <div class="table-wrap">
-    <table class="food-table">
-      <caption class="muted">Values are per typical serving (g unless stated). P protein, C carbs, F fat, Fb fibre, Na salt.</caption>
+    <table class="data-table">
+      <caption>Grams per typical serving, except kcal. On phones: P protein, C carbs, F fat, Fb fibre, Na salt.</caption>
       <thead>
         <tr>
           <th scope="col" class="name-col">Food</th>
           <th scope="col" class="serving-col">Serving</th>
-          <th scope="col" class="num h-cal">kcal</th>
-          <th scope="col" class="num h-pro"><span class="short" aria-hidden="true">P</span><span class="long">Protein g</span></th>
-          <th scope="col" class="num h-car"><span class="short" aria-hidden="true">C</span><span class="long">Carbs g</span></th>
-          <th scope="col" class="num h-fat"><span class="short" aria-hidden="true">F</span><span class="long">Fat g</span></th>
-          <th scope="col" class="num h-fib"><span class="short" aria-hidden="true">Fb</span><span class="long">Fibre g</span></th>
-          <th scope="col" class="num h-sal"><span class="short" aria-hidden="true">Na</span><span class="long">Salt g</span></th>
+          {{ nutrient_headers() }}
         </tr>
       </thead>
       <tbody>
@@ -19,28 +15,22 @@
           <tr>
             <th scope="row" class="name-col">
               <div class="name-cell">
-              <button type="button" class="star{{ ' on' if food.is_favourite }}"
-                      hx-post="{{ url_for('foods.favourite', food_id=food.id) }}"
-                      hx-include="[name=q]" hx-target="#food-list"
-                      aria-label="{{ 'Remove from favourites' if food.is_favourite else 'Add to favourites' }}"
-                      title="{{ 'Unfavourite' if food.is_favourite else 'Favourite' }}">{{ '★' if food.is_favourite else '☆' }}</button>
-              <a href="{{ url_for('foods.detail', food_id=food.id) }}">{{ food.name }}</a>
+                {{ star(food, url_for('foods.favourite', food_id=food.id), '#food-list', '[name=q]') }}
+                <a href="{{ url_for('foods.detail', food_id=food.id) }}">{{ food.name }}</a>
               </div>
             </th>
             <td class="muted serving-col">{{ food.serving_label or (food.serving_size|num ~ ' ' ~ food.unit) }}</td>
-            <td class="num">{{ m.calories_kcal|num(0) }}</td>
-            <td class="num">{{ m.protein_g|num }}</td>
-            <td class="num">{{ m.carbs_g|num }}</td>
-            <td class="num">{{ m.fat_g|num }}</td>
-            <td class="num">{{ m.fibre_g|num }}</td>
-            <td class="num">{{ m.salt_g|num(2) }}</td>
+            {{ nutrient_cells(m) }}
           </tr>
         {% endfor %}
       </tbody>
     </table>
   </div>
 {% elif q %}
-  <p class="muted">No foods match "{{ q }}".</p>
+  <p class="empty-inline">No foods match "{{ q }}".</p>
 {% else %}
-  <p class="muted">No foods yet. <a href="{{ url_for('foods.new') }}">Add your first food</a>.</p>
+  <div class="empty">
+    <p>Your food library is empty.</p>
+    <a class="btn btn-primary" href="{{ url_for('foods.new') }}">Add your first food</a>
+  </div>
 {% endif %}

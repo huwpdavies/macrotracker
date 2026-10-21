@@ -2,29 +2,12 @@
 {% block title %}{{ meal.name }} · Macro Tracker{% endblock %}
 {% block content %}
   <a class="back" href="{{ url_for('meals.index') }}">← Meals</a>
-  <h1 class="sheet-title">{{ meal.name }}</h1>
-  {% if meal.notes %}<p class="muted">{{ meal.notes }}</p>{% endif %}
-
-  <h2>Ingredients</h2>
-  <ul class="rows">
-    {% for item, macros in lines %}
-      <li>
-        <a href="{{ url_for('foods.detail', food_id=item.food.id) }}" class="grow">{{ item.food.name }}</a>
-        <span>{{ item.quantity|num(2) }} {{ item.food.unit }}</span>
-        <span class="muted">{{ macros.calories_kcal|num(0) }} kcal</span>
-      </li>
-    {% endfor %}
-  </ul>
-
-  <h2>Whole recipe</h2>
-  {% with macros = total %}{% include "partials/_nutrient_chips.html" %}{% endwith %}
-  {% if meal.servings != 1 %}
-    <h2 style="margin-top: 1.5rem">Per serving (1 of {{ meal.servings|num(2) }})</h2>
-    {% with macros = per_serving %}{% include "partials/_nutrient_chips.html" %}{% endwith %}
-  {% endif %}
+  {% set editing = False %}
+  {% include "meals/_sheet.html" %}
 
   <div class="actions">
-    <a class="btn btn-primary" href="{{ url_for('meals.edit', meal_id=meal.id) }}">Edit</a>
+    <a class="btn btn-primary" href="{{ url_for('meals.edit', meal_id=meal.id) }}">Edit meal</a>
+    <span class="spacer"></span>
     <form method="post" action="{{ url_for('meals.delete', meal_id=meal.id) }}" class="inline"
           onsubmit="return confirm('Delete {{ meal.name|replace("'", "") }}?')">
       <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">

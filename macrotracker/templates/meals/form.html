@@ -4,10 +4,11 @@
   {% set editing = True %}
   <a class="back" href="{{ url_for('meals.index') }}">← Meals</a>
 
-  {# Typing posts the fields to /preview and HTMX swaps the reply into #totals. Save is a normal submit.
+  {# Typing posts the fields to /preview: HTMX swaps the totals into #totals and each row's macros into
+     its own line (out-of-band, by id). Save is a normal submit.
      The hx- attributes sit on a div, not the form: htmx would refuse to send a form that fails browser validation. #}
   <form method="post">
-    <div id="meal-fields" hx-post="{{ url_for('meals.preview') }}" hx-trigger="input delay:300ms, load" hx-target="#totals">
+    <div id="meal-fields" hx-post="{{ url_for('meals.preview') }}" hx-trigger="input delay:300ms" hx-target="#totals">
       {{ form.hidden_tag() }}
       {% include "meals/_sheet.html" %}
       <div class="actions">

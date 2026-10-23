@@ -246,14 +246,21 @@ a.tile:hover { border-color: var(--accent); color: var(--text); }
 .error-page h1 { margin-bottom: var(--s3); }
 .error-actions { display: flex; flex-wrap: wrap; gap: var(--s3); margin-top: var(--s5); }
 
-/* 9 Meals: ingredient rows in the meal form ------------------------------- */
-.item-row { flex-wrap: wrap; }
-.item-row .item-food { flex: 1 1 14rem; min-width: 0; }
-.item-row .item-amount { flex: 0 1 6rem; min-width: 0; }
-.item-row .item-mode { flex: 0 1 8rem; min-width: 0; }
+/* 9 Meals: totals sub-headings, condensed ingredient rows ------------------- */
+.subhead { margin: var(--s3) 0 var(--s2); font-size: .8125rem; font-weight: var(--heading-weight); letter-spacing: .1em; text-transform: uppercase; color: var(--muted); }
+.subhead:first-child { margin-top: 0; }
+/* One line per ingredient: food search, amount, unit, remove; its own macros underneath. */
+.item-rows > .item-row { display: grid; grid-template-columns: minmax(0, 1fr) 5rem 7rem 2.25rem; gap: var(--s1) var(--s2);
+  align-items: center; padding: var(--s2) var(--s3); }
+.item-row input, .item-row select { min-height: 2.5rem; padding: var(--s1) var(--s2); }
+.item-row .item-remove { width: 2.25rem; height: 2.25rem; }
+.item-macros { grid-column: 1 / -1; margin: 0; display: flex; flex-wrap: wrap; gap: 0 var(--s3); font-size: .875rem;
+  color: var(--muted); font-variant-numeric: tabular-nums; }
+.item-macros .kcal-chip { color: var(--accent); font-weight: var(--number-weight); }
+.item-macros.item-warn { color: var(--warn); }
 @media (max-width: 640px) {
-  .item-row .item-food { flex-basis: 100%; }
-  .item-row .item-amount, .item-row .item-mode { flex: 1 1 0; }
+  .item-rows > .item-row { grid-template-columns: minmax(0, 1fr) minmax(0, 1fr) 2.25rem; }
+  .item-row .item-food { grid-column: 1 / -1; }
 }
 
 /* 10 Goals: one card per goal --------------------------------------------- */

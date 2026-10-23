@@ -1,4 +1,6 @@
-{# One layout for a meal, used by the meal page (editing=False) and the add/edit form (editing=True). #}
+{# One layout for a meal, used by the meal page (editing=False) and the add/edit form (editing=True).
+   Totals first, then the ingredient lines with their own macros, then notes. #}
+{% from "partials/_table_macros.html" import nutrient_headers, nutrient_cells %}
 <header class="page-head">
   <div>
     <p class="eyebrow">Meal</p>
@@ -18,54 +20,66 @@
 {% endif %}
 
 <section class="section">
-  <div class="section-head"><h2>Details</h2></div>
-  <div class="facts">
-    {% if editing %}
-      <label class="tile" for="{{ form.servings.id }}">
-        <span class="tile-label">Makes</span>
-        <span class="tile-line">{{ form.servings(class_="tile-input", inputmode="decimal") }}<small>servings</small></span>
-      </label>
-      <label class="tile wide" for="{{ form.notes.id }}">
-        <span class="tile-label">Notes (optional)</span>
-        {{ form.notes(class_="tile-input text", placeholder="e.g. quick lunch") }}
-      </label>
-    {% else %}
-      <div class="tile">
-        <span class="tile-label">Makes</span>
-        <span class="tile-line"><span class="tile-value">{{ meal.servings|num(2) }}</span><small>{{ "serving" if meal.servings == 1 else "servings" }}</small></span>
-      </div>
-      <div class="tile wide">
-        <span class="tile-label">Notes</span>
-        <span class="tile-text">{{ meal.notes or "—" }}</span>
-      </div>
-    {% endif %}
+  <div class="section-head">
+    <h2>Totals</h2>
+    <p class="section-sub">
+      recipe makes
+      {% if editing %}
+        <label for="{{ form.servings.id }}" class="sr-only">Servings this makes</label>
+        {{ form.servings(class_="inline-input", inputmode="decimal") }}
+      {% else %}
+        <strong>{{ meal.servings|num(2) }}</strong>
+      {% endif %}
+      {{ "serving" if servings == 1 else "servings" }}
+    </p>
   </div>
+  <div id="totals" aria-live="polite">{% include "partials/_meal_totals.html" %}</div>
 </section>
 
 <section class="section">
   <div class="section-head">
     <h2>Ingredients</h2>
-    {% if editing %}<p class="section-sub">a number of servings, or an exact amount in the food's unit</p>{% endif %}
+    {% if editing %}<p class="section-sub">search a food, then servings or an exact amount</p>{% endif %}
   </div>
   {% if editing %}
-    <div class="list" id="item-rows">
+    <datalist id="food-options">
+      {% for food in foods %}<option value="{{ labels[food.id] }}">{{ food.serving_label or (food.serving_size|num(2) ~ ' ' ~ food.unit) }} per serving</option>{% endfor %}
+    </datalist>
+    <div class="list item-rows" id="item-rows">
       {% for row in rows %}{% include "partials/_meal_item_row.html" %}{% endfor %}
     </div>
     <button type="button" class="btn btn-secondary add-row"
             hx-get="{{ url_for('meals.row') }}" hx-target="#item-rows" hx-swap="beforeend">Add ingredient</button>
   {% else %}
-    <ul class="list">
-      {% for item, macros in lines %}
-        <li>
-          <a href="{{ url_for('foods.detail', food_id=item.food.id) }}" class="grow">{{ item.food.name }}</a>
-          <span class="amount">{{ item.quantity|num(2) }} {{ item.food.unit }}</span>
-          <span class="kcal">{{ macros.calories_kcal|num(0) }} kcal</span>
-        </li>
-      {% endfor %}
-    </ul>
+    <div class="table-wrap">
+      <table class="data-table ingredient-table">
+        <caption>Grams, except kcal. On phones: P protein, C carbs, F fat, Fb fibre, Na salt.</caption>
+        <thead><tr><th scope="col" class="name-col">Ingredient</th>{{ nutrient_headers() }}</tr></thead>
+        <tbody>
+          {% for item, macros in lines %}
+            <tr>
+              <th scope="row" class="name-col">
+                <a href="{{ url_for('foods.detail', food_id=item.food.id) }}">{{ item.food.name }}</a>
+                <span class="row-meta">{{ item.quantity|num(2) }}&nbsp;{{ item.food.unit }}</span>
+              </th>
+              {{ nutrient_cells(macros) }}
+            </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
   {% endif %}
 </section>
 
-<div id="totals" aria-live="polite">
-  {% if not editing %}{% include "partials/_meal_totals.html" %}{% endif %}
-</div>
+{% if editing %}
+  <section class="section">
+    <div class="section-head"><h2>Notes</h2><p class="section-sub">optional</p></div>
+    <label for="{{ form.notes.id }}" class="sr-only">Notes</label>
+    {{ form.notes(placeholder="e.g. quick lunch") }}
+  </section>
+{% elif meal.notes %}
+  <section class="section">
+    <div class="section-head"><h2>Notes</h2></div>
+    <p>{{ meal.notes }}</p>
+  </section>
+{% endif %}

@@ -41,16 +41,16 @@
     input.value = Math.round(next * 100) / 100;
   });
 
-  // After a successful add: brief "Added ✓" on the card, then reset its amount.
+  // After a successful add: the + briefly becomes ✓, then the card's amount resets.
   document.body.addEventListener("htmx:afterRequest", function (e) {
     var form = e.detail.elt;
     if (!form.classList || !form.classList.contains("product") || !e.detail.successful) return;
     var button = form.querySelector(".product-add");
     form.classList.add("added");
-    button.textContent = "Added ✓";
+    button.textContent = "✓";
     setTimeout(function () {
       form.classList.remove("added");
-      button.textContent = "Add";
+      button.textContent = "+";
       form.querySelector("input[name=amount]").value = 1;
     }, 1200);
   });

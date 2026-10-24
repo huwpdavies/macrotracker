@@ -24,9 +24,8 @@
             <span class="product-name">{% if item.is_favourite %}<span class="fav" aria-label="Favourite">★</span> {% endif %}{{ card.name }}</span>
             {% if card.kind == "meal" %}<span class="product-kind">Meal</span>{% endif %}
           </div>
-          <p class="product-serving">{{ card.serving }}</p>
+          <p class="product-serving"><span>{{ card.serving }}</span><span class="kcal-chip">{{ m.calories_kcal|num(0) }}&nbsp;kcal</span></p>
           <p class="product-macros">
-            <span class="kcal-chip">{{ m.calories_kcal|num(0) }}&nbsp;kcal</span>
             <span>P&nbsp;{{ m.protein_g|num }}</span><span>C&nbsp;{{ m.carbs_g|num }}</span><span>F&nbsp;{{ m.fat_g|num }}</span><span>Fb&nbsp;{{ m.fibre_g|num }}</span><span>Na&nbsp;{{ m.salt_g|num(2) }}</span>
           </p>
           <div class="product-controls">
@@ -43,7 +42,7 @@
             {% else %}
               <input type="hidden" name="mode" value="servings"><span class="product-unit">serving</span>
             {% endif %}
-            <button type="submit" class="btn btn-primary btn-sm product-add">Add</button>
+            <button type="submit" class="product-add" aria-label="Add {{ card.name }}" title="Add">+</button>
           </div>
         </form>
       </li>

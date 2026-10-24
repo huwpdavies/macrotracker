@@ -1,3 +1,5 @@
+import uuid
+from collections import Counter
 from decimal import Decimal, InvalidOperation
 from types import SimpleNamespace
 
@@ -22,35 +24,59 @@ def _all_foods():
     return Food.query.order_by(Food.is_favourite.desc(), Food.name).all()
 
 
+def food_labels(foods):
+    """The text shown (and typed) for each food in the ingredient search box.
+
+    Usually just the name; two foods with the same name get their unit and number added so they stay distinct.
+    """
+    counts = Counter(f.name for f in foods)
+    return {f.id: f.name if counts[f.name] == 1 else f"{f.name} ({f.unit}, #{f.id})" for f in foods}
+
+
+def _new_key():
+    # Each row on the page gets a short id so the live preview can update that row's macros in place.
+    return uuid.uuid4().hex[:8]
+
+
 def _blank_row():
-    return {"food_id": "", "amount": "1", "mode": "servings"}
+    return {"key": _new_key(), "food": "", "amount": "1", "mode": "servings"}
 
 
 def _rows_from_form():
     """The raw ingredient rows as posted, so a form with errors can be shown again as typed."""
     return [
-        {"food_id": f, "amount": a, "mode": m}
-        for f, a, m in zip(
-            request.form.getlist("item_food_id"),
+        {"key": k, "food": f.strip(), "amount": a, "mode": m}
+        for k, f, a, m in zip(
+            request.form.getlist("item_key"),
+            request.form.getlist("item_food"),
             request.form.getlist("item_amount"),
             request.form.getlist("item_mode"),
         )
     ]
 
 
-def _items_from_rows(rows):
-    """Turn posted rows into (food, quantity-in-the-food's-unit) items. Blank or bad rows are skipped."""
-    foods = {str(f.id): f for f in Food.query.all()}
-    items = []
+def _resolve(rows):
+    """Attach the matching food, quantity (in the food's unit) and macros to each row.
+
+    Rows whose food text matches nothing, or whose amount isn't above zero, get item=None.
+    """
+    foods = Food.query.all()
+    labels = food_labels(foods)
+    by_label = {labels[food.id].casefold(): food for food in foods}
     for row in rows:
-        food = foods.get(row["food_id"])
+        food = by_label.get(row["food"].casefold())
         amount = _dec(row["amount"])
+        row["unknown"] = bool(row["food"]) and food is None
+        row["item"] = None
         if food is None or amount <= 0:
             continue
-        if row["mode"] == "servings":
-            amount = nutrition.quantity_from_servings(food, amount)
-        items.append(SimpleNamespace(food=food, quantity=amount))
-    return items
+        quantity = nutrition.quantity_from_servings(food, amount) if row["mode"] == "servings" else amount
+        row["item"] = SimpleNamespace(food=food, quantity=quantity, macros=nutrition.macros_for(food, quantity))
+    return rows
+
+
+def _items(rows):
+    return [row["item"] for row in rows if row["item"]]
 
 
 def _summary(items, servings):
@@ -89,9 +115,13 @@ def detail(meal_id):
 
 def _save(meal, form):
     """Shared by new and edit. Returns a redirect on success, or None if the form needs showing again."""
-    rows = _rows_from_form()
-    items = _items_from_rows(rows)
+    rows = _resolve(_rows_from_form())
+    items = _items(rows)
     if not form.validate_on_submit():
+        return None
+    unknown = [row["food"] for row in rows if row["unknown"]]
+    if unknown:
+        flash(f"Couldn't find {', '.join(repr(u) for u in unknown)}. Pick foods from the suggestions.", "error")
         return None
     if not items:
         flash("Add at least one ingredient with an amount.", "error")
@@ -107,10 +137,12 @@ def _save(meal, form):
 
 
 def _form_page(form, meal, rows):
-    items = _items_from_rows(rows)
-    total, per_serving = _summary(items, form.servings.data or 1)
-    return render_template("meals/form.html", form=form, meal=meal, rows=rows or [_blank_row()],
-                           foods=_all_foods(), total=total, per_serving=per_serving)
+    rows = _resolve(rows or [_blank_row()])
+    servings = form.servings.data or 1
+    total, per_serving = _summary(_items(rows), servings)
+    foods = _all_foods()
+    return render_template("meals/form.html", form=form, meal=meal, rows=rows, foods=foods, labels=food_labels(foods),
+                           total=total, per_serving=per_serving, servings=servings, has_items=bool(_items(rows)))
 
 
 @bp.route("/new", methods=["GET", "POST"])
@@ -137,7 +169,8 @@ def edit(meal_id):
         return _form_page(form, meal, _rows_from_form())
     form = MealForm(obj=meal)
     form.servings.data = nutrition.tidy(form.servings.data)
-    rows = [{"food_id": str(i.food_id), "amount": str(nutrition.tidy(i.quantity)), "mode": "amount"}
+    labels = food_labels(Food.query.all())
+    rows = [{"key": _new_key(), "food": labels[i.food_id], "amount": str(nutrition.tidy(i.quantity)), "mode": "amount"}
             for i in meal.items]
     return _form_page(form, meal, rows)
 
@@ -154,14 +187,14 @@ def delete(meal_id):
 @bp.route("/row")
 def row():
     """HTMX fragment: one blank ingredient row to append to the form."""
-    return render_template("partials/_meal_item_row.html", row=_blank_row(), foods=_all_foods())
+    return render_template("partials/_meal_item_row.html", row=_blank_row())
 
 
 @bp.route("/preview", methods=["POST"])
 def preview():
-    """HTMX fragment: meal totals recalculated from the rows currently in the form."""
-    items = _items_from_rows(_rows_from_form())
+    """HTMX fragment: the totals, plus each row's own macros swapped in "out of band" by id."""
+    rows = _resolve(_rows_from_form())
     servings = _dec(request.form.get("servings"), Decimal(1))
-    total, per_serving = _summary(items, servings)
-    return render_template("partials/_meal_totals.html", total=total, per_serving=per_serving,
-                           servings=servings, has_items=bool(items))
+    total, per_serving = _summary(_items(rows), servings)
+    return render_template("partials/_meal_preview.html", rows=rows, total=total, per_serving=per_serving,
+                           servings=servings, has_items=bool(_items(rows)))

@@ -1,0 +1,13 @@
+{# One ingredient row's own numbers. Expects `row` (with item, unknown, food). Also sent "out of band" by the preview. #}
+<p class="item-macros{{ ' item-warn' if row.unknown }}" id="m-{{ row.key }}"{% if oob %} hx-swap-oob="true"{% endif %}>
+  {%- if row.item -%}
+    {% set m = row.item.macros %}
+    <span>{{ row.item.quantity|num(2) }}&nbsp;{{ row.item.food.unit }}</span>
+    <span class="kcal-chip">{{ m.calories_kcal|num(0) }}&nbsp;kcal</span>
+    <span>P&nbsp;{{ m.protein_g|num }}</span><span>C&nbsp;{{ m.carbs_g|num }}</span><span>F&nbsp;{{ m.fat_g|num }}</span><span>Fb&nbsp;{{ m.fibre_g|num }}</span><span>Na&nbsp;{{ m.salt_g|num(2) }}</span>
+  {%- elif row.unknown -%}
+    No food called "{{ row.food }}". Pick one from the suggestions.
+  {%- else -%}
+    Start typing a food name.
+  {%- endif -%}
+</p>

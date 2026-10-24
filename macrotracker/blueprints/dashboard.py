@@ -17,10 +17,11 @@ def index():
     if day is None:
         abort(404)
     goal = Goal.query.filter_by(is_active=True).first()
-    rows = dashboard.progress(dashboard.day_totals(day), goal)
+    totals = dashboard.day_totals(day)
+    rows = dashboard.progress(totals, goal)
     entries = log_service.entries_for(day)
     return render_template(
-        "dashboard/index.html", day=day, goal=goal, entries=entries,
+        "dashboard/index.html", day=day, goal=goal, entries=entries, totals=totals,
         calories=rows[0], nutrients=rows[1:], cheer=dashboard.cheer(rows, bool(entries)) if goal else None,
         label=dates.day_label(day), long_date=dates.long_date(day),
         prev_day=(day - timedelta(days=1)).isoformat(), next_day=(day + timedelta(days=1)).isoformat(),

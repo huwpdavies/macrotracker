@@ -202,7 +202,6 @@ a.tile:hover { border-color: var(--accent); color: var(--text); }
 .list a.grow:hover { color: var(--accent); }
 .list .amount { font-variant-numeric: tabular-nums; }
 .list .kcal { color: var(--muted); font-variant-numeric: tabular-nums; min-width: 4.5rem; text-align: right; }
-.row-title { display: block; font-weight: var(--heading-weight); overflow-wrap: anywhere; }
 .row-meta { display: block; font-size: .9375rem; font-weight: var(--text-weight); color: var(--muted); }
 
 .table-wrap { overflow-x: auto; background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius); box-shadow: var(--shadow); }
@@ -282,19 +281,50 @@ a.tile:hover { border-color: var(--accent); color: var(--text); }
 .goal-card-head a:hover { color: var(--accent); }
 .goal-card-actions { display: flex; flex-wrap: wrap; align-items: center; gap: var(--s2); margin-top: var(--s3); padding-top: var(--s3); border-top: 1px solid var(--line); }
 
-/* 11 Log: day navigation and quick-add results ---------------------------- */
+/* 11 Log: catalogue cards, filter chips, background-add message --------- */
+.catalogue-tools { display: flex; flex-wrap: wrap; align-items: center; gap: var(--s2) var(--s3); margin-bottom: var(--s3); }
+.catalogue-tools .search { flex: 1 1 16rem; margin: 0; }
+.filter-chips { display: flex; flex-wrap: wrap; gap: var(--s2); }
+.chip { min-height: 2.25rem; padding: 0 var(--s3); border-radius: 999px; border: 1px solid var(--line-strong); background: var(--surface);
+  color: var(--text); font-size: .9375rem; cursor: pointer; }
+.chip[aria-pressed="true"] { background: var(--accent); border-color: var(--accent); color: var(--on-accent); }
+.catalogue { list-style: none; margin: 0; padding: 0; display: grid; grid-template-columns: repeat(auto-fill, minmax(17rem, 1fr)); gap: var(--s3); }
+.product { display: flex; flex-direction: column; gap: var(--s1); height: 100%; margin: 0; padding: var(--s3) var(--s4);
+  background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius); box-shadow: var(--shadow);
+  transition: border-color .2s; }
+.product.added { border-color: var(--accent); }
+.product-head { display: flex; align-items: baseline; justify-content: space-between; gap: var(--s2); }
+.product-name { font-weight: var(--heading-weight); line-height: 1.3; overflow-wrap: anywhere; }
+.product-name .fav { color: var(--accent); }
+.product-kind { flex: none; padding: 1px var(--s2); border-radius: 999px; border: 1px solid var(--line-strong); font-size: .75rem; color: var(--muted); }
+.product-serving { margin: 0; font-size: .875rem; color: var(--muted); }
+.product-macros { margin: 0; display: flex; flex-wrap: wrap; gap: 0 var(--s2); font-size: .875rem; color: var(--muted); font-variant-numeric: tabular-nums; }
+.kcal-chip { color: var(--accent); font-weight: var(--number-weight); }
+.product-controls { display: flex; align-items: center; gap: var(--s2); margin-top: auto; padding-top: var(--s2); }
+.product-controls select { width: auto; min-height: 2.25rem; padding: var(--s1) var(--s2); flex: 1; min-width: 0; }
+.product-unit { flex: 1; color: var(--muted); font-size: .9375rem; }
+.product-add { flex: none; }
+.stepper { display: flex; align-items: center; border: 1px solid var(--control); border-radius: var(--radius-sm); overflow: hidden; flex: none; }
+.stepper input { width: 3.25rem; min-height: 2.25rem; padding: 0; border: 0; border-radius: 0; text-align: center; -moz-appearance: textfield; }
+.stepper input::-webkit-inner-spin-button, .stepper input::-webkit-outer-spin-button { -webkit-appearance: none; margin: 0; }
+.stepper input:focus { outline-offset: -2px; }
+.step { width: 2.25rem; height: 2.25rem; border: 0; background: var(--surface-2); color: var(--text); font-size: 1.125rem; cursor: pointer; }
+.step:hover { background: var(--line-strong); }
+/* The message after adding: fixed above the tab bar, fades out after a few seconds (catalogue.js). */
+.toast { position: fixed; left: 50%; bottom: var(--s5); z-index: 40; transform: translate(-50%, 1rem); display: flex; align-items: center; gap: var(--s3);
+  width: max-content; max-width: calc(100% - 2rem); padding: var(--s3) var(--s4); border-radius: var(--radius-sm);
+  background: var(--surface-2); color: var(--text); border: 1px solid var(--accent); box-shadow: 0 6px 20px rgba(0, 0, 0, .45);
+  opacity: 0; pointer-events: none; transition: opacity .2s, transform .2s; }
+.toast.show { opacity: 1; pointer-events: auto; transform: translate(-50%, 0); }
+.toast-error { border-color: var(--warn); color: var(--warn); }
+.toast-undo { background: none; border: 0; padding: var(--s1) var(--s2); color: var(--accent); font: inherit; font-weight: var(--heading-weight);
+  text-decoration: underline; text-underline-offset: 3px; cursor: pointer; }
 .day-date { margin: var(--s1) 0 0; }
 /* Previous / Today / Next sit at the bottom of the dashboard and log, after the day's content. */
 .day-nav { display: flex; flex-wrap: wrap; gap: var(--s2); margin-top: var(--s6); padding-top: var(--s5); border-top: 1px solid var(--line); }
-.results > li { flex-wrap: wrap; }
-.result-form { display: flex; align-items: center; gap: var(--s2); }
-.result-form .result-amount { width: 4.5rem; min-height: 2.25rem; padding: var(--s1) var(--s2); }
-.result-form .result-mode { width: auto; min-height: 2.25rem; padding: var(--s1) var(--s2); }
-.result-unit { color: var(--muted); }
 @media (max-width: 640px) {
   .day-nav .btn { flex: 1; }
-  .result-form { flex: 1 1 100%; }
-  .result-form .result-mode { flex: 1; }
+  .toast { bottom: calc(5.5rem + env(safe-area-inset-bottom)); }
 }
 
 /* The "Eaten" table on the dashboard and log: item names link to their edit page, total row at the foot. */

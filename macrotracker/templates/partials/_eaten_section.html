@@ -1,0 +1,8 @@
+{# Inner part of the log page's Eaten section; re-sent after each background add or undo. #}
+<div class="section-head">
+  <h2>Eaten</h2>
+  <p class="section-sub">{{ entries|length }} item{{ '' if entries|length == 1 else 's' }}</p>
+</div>
+{% with empty_text = "Nothing logged " ~ ("yet today" if is_today else "for this day") ~ ". Tap Add on anything above." %}
+  {% include "partials/_entries.html" %}
+{% endwith %}

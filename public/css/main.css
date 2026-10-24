@@ -6,7 +6,8 @@
    13 Reduced motion (last, so it wins)
 
    Each section keeps its own phone rules next to it. Breakpoints: 900px (narrow desktop),
-   640px (phone: bottom tab bar, two-column tiles), 400px (small phone). */
+   640px (phone: bottom tab bar, two-column tiles), 400px (small phone); min-width 1000px puts
+   six tiles, two meters and two goal cards in a row on big screens. */
 
 /* 1 Tokens ---------------------------------------------------------------- */
 /* Named by purpose, not colour, so a new palette is just new values here.
@@ -38,6 +39,7 @@
   --text-weight: 400;
   --heading-weight: 500;
   --number-weight: 600;
+  --page-width: 76rem;           /* content width on big screens (about 1200px) */
   --radius: 14px;
   --radius-sm: 10px;
   --shadow: 0 1px 2px rgba(0, 0, 0, .35);
@@ -66,7 +68,7 @@ strong, b { font-weight: var(--number-weight); }
 
 /* 3 Layout and navigation ------------------------------------------------- */
 .topbar { background: var(--bar); border-bottom: 1px solid var(--line); position: sticky; top: 0; z-index: 20; }
-.topbar-inner { max-width: 62rem; margin: 0 auto; padding: 0 var(--s4); height: 3.75rem; display: flex; align-items: center; gap: var(--s5); }
+.topbar-inner { max-width: var(--page-width); margin: 0 auto; padding: 0 var(--s5); height: 3.75rem; display: flex; align-items: center; gap: var(--s5); }
 .brand { font-weight: var(--heading-weight); font-size: 1.3125rem; color: var(--text); text-decoration: none; letter-spacing: -.01em; }
 .brand span { color: var(--accent); }
 .brand:hover { color: var(--text); }
@@ -77,8 +79,7 @@ strong, b { font-weight: var(--number-weight); }
 .tab[aria-current="page"] { color: var(--on-accent); background: var(--accent); }
 .tab svg { width: 1.2rem; height: 1.2rem; fill: none; stroke: currentColor; stroke-width: 1.75; stroke-linecap: round; stroke-linejoin: round; }
 
-main { max-width: 44rem; margin: 0 auto; padding: var(--s6) var(--s4) var(--s7); }
-main.wide { max-width: 62rem; }
+main { max-width: var(--page-width); margin: 0 auto; padding: var(--s6) var(--s5) var(--s7); }
 .back { display: inline-flex; align-items: center; gap: var(--s1); min-height: 2.75rem; margin: calc(-1 * var(--s3)) 0 var(--s2);
   color: var(--muted); font-size: 1rem; text-decoration: none; }
 .back:hover { color: var(--text); }
@@ -98,7 +99,7 @@ main.wide { max-width: 62rem; }
 
 @media (max-width: 640px) {
   main { padding: var(--s5) var(--s4) 6.5rem; }
-  .topbar-inner { height: 3.25rem; justify-content: center; }
+  .topbar-inner { height: 3.25rem; padding: 0 var(--s4); justify-content: center; }
   /* Tabs become a fixed bottom bar, within reach of one thumb. */
   .tabs { position: fixed; left: 0; right: 0; bottom: 0; z-index: 30; justify-content: space-around; gap: 0;
     background: var(--bar); border-top: 1px solid var(--line); padding: var(--s2) var(--s2) calc(var(--s2) + env(safe-area-inset-bottom)); }
@@ -175,6 +176,9 @@ a.tile:hover { border-color: var(--accent); color: var(--text); }
 .nutrients.compact .tile-label { font-size: .75rem; }
 .nutrients.compact .tile-line { flex-wrap: nowrap; }
 .nutrients.compact .tile-value { font-size: 1.25rem; white-space: nowrap; overflow-wrap: normal; }
+
+/* Wide screens: all six nutrients in one row. */
+@media (min-width: 1000px) { .nutrients { grid-template-columns: repeat(6, 1fr); } }
 
 /* Edit mode: the same tile, with the value as a field. */
 .tile .tile-input { width: 100%; min-width: 0; min-height: 2.5rem; padding: var(--s1) var(--s2); font: inherit; font-size: 1.5rem;
@@ -267,6 +271,10 @@ a.tile:hover { border-color: var(--accent); color: var(--text); }
 
 /* 10 Goals: one card per goal --------------------------------------------- */
 .goal-cards { display: grid; gap: var(--s4); }
+@media (min-width: 1000px) {
+  .goal-cards { grid-template-columns: repeat(2, minmax(0, 1fr)); align-items: start; }
+  .goal-card .nutrients.compact { grid-template-columns: repeat(3, 1fr); }  /* half-width card: three tiles a row */
+}
 .goal-card { padding: var(--s4) var(--s4) var(--s3); }
 .goal-card.is-active { border-color: var(--accent); box-shadow: 0 0 0 1px var(--accent); }
 .goal-card-head { display: flex; align-items: center; gap: var(--s3); margin-bottom: var(--s3); }
@@ -307,6 +315,7 @@ a.tile:hover { border-color: var(--accent); color: var(--text); }
 .calorie-pct { margin: 0; font-size: 1.375rem; font-weight: var(--number-weight); font-variant-numeric: tabular-nums; }
 
 .meters { list-style: none; margin: 0; padding: 0; display: grid; gap: var(--s3); }
+@media (min-width: 1000px) { .meters { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
 .meter { background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius); box-shadow: var(--shadow); padding: var(--s3) var(--s4); }
 .meter-head { display: flex; justify-content: space-between; align-items: baseline; gap: var(--s3); flex-wrap: wrap; }
 .meter-label { font-weight: var(--heading-weight); }

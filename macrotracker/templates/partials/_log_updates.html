@@ -1,0 +1,12 @@
+{# Reply to a background add or undo: only out-of-band pieces, swapped into the page by id. #}
+<div id="day-total" hx-swap-oob="true">{% include "partials/_day_total.html" %}</div>
+<section class="section" id="eaten" hx-swap-oob="true">{% include "partials/_eaten_section.html" %}</section>
+<div id="toast" class="toast show{{ ' toast-error' if error }}" role="status" aria-live="polite" hx-swap-oob="true">
+  <span>{{ message }}{% if not error %} Day total {{ totals.calories_kcal|num(0) }} kcal.{% endif %}</span>
+  {% if undo_ids %}
+    <form hx-post="{{ url_for('log.undo', day_text=day.isoformat()) }}" hx-swap="none" class="inline">
+      {% for entry_id in undo_ids %}<input type="hidden" name="entry_id" value="{{ entry_id }}">{% endfor %}
+      <button type="submit" class="toast-undo">Undo</button>
+    </form>
+  {% endif %}
+</div>

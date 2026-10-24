@@ -11,35 +11,25 @@
 
   <section class="section">
     <div class="section-head"><h2>Day total</h2></div>
-    {% with macros = totals, compact = True %}{% include "partials/_nutrients.html" %}{% endwith %}
+    <div id="day-total">{% include "partials/_day_total.html" %}</div>
   </section>
 
   <section class="section">
     <div class="section-head">
       <h2>Add food or meal</h2>
-      <p class="section-sub">search, set the amount, tap Add</p>
+      <p class="section-sub">set the amount and tap Add; it saves in the background</p>
     </div>
-    <div class="search">
-      <input type="search" name="q" placeholder="Search foods and meals" aria-label="Search foods and meals" autocomplete="off"
-             hx-get="{{ url_for('log.search', day_text=day.isoformat()) }}"
-             hx-trigger="input changed delay:250ms, search, load" hx-target="#log-results">
-    </div>
-    <div id="log-results" aria-live="polite"></div>
+    {% include "partials/_catalogue.html" %}
   </section>
 
-  <section class="section">
-    <div class="section-head">
-      <h2>Eaten</h2>
-      <p class="section-sub">{{ entries|length }} item{{ '' if entries|length == 1 else 's' }}</p>
-    </div>
-    {% with empty_text = "Nothing logged " ~ ("yet today" if is_today else "for this day") ~ ". Search above to add your first item." %}
-      {% include "partials/_entries.html" %}
-    {% endwith %}
-  </section>
+  <section class="section" id="eaten">{% include "partials/_eaten_section.html" %}</section>
 
   <nav class="day-nav" aria-label="Choose day">
     <a class="btn btn-secondary btn-sm" href="{{ url_for('log.day', day_text=prev_day) }}" aria-label="Previous day">← Previous</a>
     {% if not is_today %}<a class="btn btn-secondary btn-sm" href="{{ url_for('log.today') }}">Today</a>{% endif %}
     <a class="btn btn-secondary btn-sm" href="{{ url_for('log.day', day_text=next_day) }}" aria-label="Next day">Next →</a>
   </nav>
+
+  <div id="toast" class="toast" role="status" aria-live="polite"></div>
+  <script src="/js/catalogue.js" defer></script>
 {% endblock %}

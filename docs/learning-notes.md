@@ -87,3 +87,8 @@
 - Changed: one `--page-width` (76rem, about 1200px) for every page and the top bar, replacing the narrow 44rem column; above 1000px wide, nutrient tiles go six across, dashboard bars and goal cards two across (with three tiles a row inside each half-width goal card). Phones are unchanged.
 - Concepts: `min-width` media queries add layout for big screens on top of the phone-first rules; a width token keeps the bar and the content lined up.
 - Files to read: `public/css/main.css` (search for `--page-width` and `min-width: 1000px`).
+
+## Log catalogue and faster saving
+- Changed: the log page shows every meal and food as a card (favourites first) with its per-serving macros, a − / + stepper and Add. Add saves in the background: the reply updates the day total, the Eaten list and a message with Undo, so the page never reloads. A filter box and All / Favourites / Meals / Foods chips filter instantly in the browser. `vercel.json` now runs the app in London (`lhr1`) next to the database; before, it ran in Washington DC (`iad1`), so every query crossed the Atlantic.
+- Concepts: measure before fixing (the `x-vercel-id` header showed `lhr1::iad1`, and the log page took about 0.85 s); HTMX `hx-swap="none"` plus out-of-band swaps lets one reply update several parts of the page; the same route still redirects when it isn't an HTMX request, so it works without JavaScript; `selectinload` loads every meal's items and foods in two queries instead of one per meal.
+- Files to read: `vercel.json`, `macrotracker/blueprints/log.py` (`_catalogue`, `add`, `undo`), `macrotracker/templates/partials/_catalogue.html`, `_log_updates.html`, `public/js/catalogue.js`.

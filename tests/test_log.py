@@ -1,3 +1,4 @@
+import re
 from datetime import date, datetime, timezone
 from decimal import Decimal
 
@@ -108,13 +109,39 @@ def test_day_page_shows_entries_and_totals(client):
     assert b"1 item" in resp.data
 
 
-def test_search_uses_query_string_and_shows_favourites_by_default(client):
-    resp = client.get(f"/log/{DAY}/search")
-    assert b"Tuna" in resp.data and b"Avocado" not in resp.data  # favourites only
-    resp = client.get(f"/log/{DAY}/search?q=avo")
-    assert b"Avocado" in resp.data and b"<html" not in resp.data
-    resp = client.get(f"/log/{DAY}/search?q=lun")
-    assert b"Lunch" in resp.data
+def test_catalogue_lists_every_meal_and_food_with_favourites_first(client):
+    html = client.get(f"/log/{DAY}").data.decode()
+    cards = re.findall(r'<li data-name="([^"]+)" data-kind="(\w+)" data-fav="(\d)"', html)
+    assert cards == [("tuna", "food", "1"), ("lunch", "meal", "0"), ("avocado", "food", "0")]
+    assert "116&nbsp;kcal" in html          # tuna per serving (115.5)
+    assert "1 of 2 servings" in html        # the meal card
+
+
+def hx_add(client, **data):
+    return client.post(f"/log/{DAY}/add", data=data, headers={"HX-Request": "true"})
+
+
+def test_background_add_replies_with_page_updates_not_a_redirect(client):
+    resp = hx_add(client, kind="food", item_id="1", amount="1", mode="servings")
+    html = resp.data.decode()
+    assert resp.status_code == 200 and "<html" not in html
+    assert 'id="day-total" hx-swap-oob="true"' in html and 'id="eaten" hx-swap-oob="true"' in html
+    assert "Added Tuna (105 g). Day total 116 kcal." in html
+    assert LogEntry.query.count() == 1
+
+
+def test_undo_removes_what_the_last_add_created(client):
+    html = hx_add(client, kind="meal", item_id="1", amount="1").data.decode()   # 2 entries
+    ids = re.findall(r'name="entry_id" value="(\d+)"', html)
+    assert len(ids) == 2
+    html = client.post(f"/log/{DAY}/undo", data={"entry_id": ids}, headers={"HX-Request": "true"}).data.decode()
+    assert "Removed 2 items" in html and LogEntry.query.count() == 0
+
+
+def test_background_add_with_zero_shows_an_error_message(client):
+    html = hx_add(client, kind="food", item_id="1", amount="0", mode="servings").data.decode()
+    assert "toast-error" in html and "Enter an amount above zero" in html
+
 
 
 def test_day_label_adds_the_year_only_for_other_years():

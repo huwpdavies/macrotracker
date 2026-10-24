@@ -82,3 +82,8 @@
 - Changed: the meal page and form show Totals first (with "recipe makes N servings" beside them), then condensed ingredient lines that each show their amount, kcal and macros, then notes. The food box is a text field with a `<datalist>`, so the browser suggests matching foods as you type (no JavaScript); the server matches the text back to a food, ignoring case, and duplicate names get "(unit, #id)" added to stay distinct.
 - Concepts: `<datalist>` for a native, phone-friendly search box; HTMX out-of-band swaps (`hx-swap-oob="true"`): one preview reply fills `#totals` and also replaces each row's macro line by its id, so every number on the form updates from one request; each row carries a short random key so the server's reply knows which line is which.
 - Files to read: `macrotracker/blueprints/meals.py` (`food_labels`, `_resolve`, `preview`), `macrotracker/templates/partials/_meal_item_row.html`, `macrotracker/templates/partials/_meal_preview.html`.
+
+## Wider layout on big screens
+- Changed: one `--page-width` (76rem, about 1200px) for every page and the top bar, replacing the narrow 44rem column; above 1000px wide, nutrient tiles go six across, dashboard bars and goal cards two across (with three tiles a row inside each half-width goal card). Phones are unchanged.
+- Concepts: `min-width` media queries add layout for big screens on top of the phone-first rules; a width token keeps the bar and the content lined up.
+- Files to read: `public/css/main.css` (search for `--page-width` and `min-width: 1000px`).

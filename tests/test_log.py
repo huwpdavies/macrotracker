@@ -161,3 +161,9 @@ def test_eaten_table_shows_each_items_macros_and_a_total_on_log_and_dashboard(cl
         foot = html[html.index("<tfoot>"):html.index("</tfoot>")]
         assert ">Total<" in foot and '<td class="num">27.3</td>' in foot                      # 26.25 + 1
         assert 'href="/log/entry/1/edit"' in html                                             # name opens the edit page
+
+
+def test_catalogue_card_has_kcal_on_the_serving_line_and_a_labelled_plus_button(client):
+    html = client.get(f"/log/{DAY}").data.decode()
+    assert '<p class="product-serving"><span>105 g</span><span class="kcal-chip">116&nbsp;kcal</span></p>' in html
+    assert 'class="product-add" aria-label="Add Tuna" title="Add">+</button>' in html

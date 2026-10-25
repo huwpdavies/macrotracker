@@ -32,11 +32,11 @@ def create_app(config_object=Config):
     from .blueprints.foods import bp as foods_bp
     from .blueprints.goals import bp as goals_bp
     from .blueprints.log import bp as log_bp
-    from .blueprints.meals import bp as meals_bp
+    from .blueprints.tags import bp as tags_bp
 
     app.register_blueprint(dashboard_bp)
     app.register_blueprint(foods_bp)
-    app.register_blueprint(meals_bp)
+    app.register_blueprint(tags_bp)
     app.register_blueprint(goals_bp)
     app.register_blueprint(log_bp)
 

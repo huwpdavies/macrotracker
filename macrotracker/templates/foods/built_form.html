@@ -1,0 +1,22 @@
+{% extends "base.html" %}
+{% block title %}{{ 'Edit' if food else 'Build' }} food · Macro Tracker{% endblock %}
+{% block content %}
+  {% set editing = True %}
+  <a class="back" href="{{ url_for('foods.index') }}">← Foods</a>
+  {% if not food %}{% with current = "built" %}{% include "partials/_add_choice.html" %}{% endwith %}{% endif %}
+
+  {# Typing posts the fields to /build-preview: HTMX swaps the totals into #totals and each row's macros into
+     its own line (out-of-band, by id). Save is a normal submit.
+     The hx- attributes sit on a div, not the form: htmx would refuse to send a form that fails browser validation. #}
+  <form method="post">
+    <div id="build-fields" hx-post="{{ url_for('foods.build_preview') }}" hx-trigger="input delay:300ms" hx-target="#totals">
+      {{ form.hidden_tag() }}
+      {% if food %}<input type="hidden" name="food_id" value="{{ food.id }}">{% endif %}
+      {% include "foods/_built_sheet.html" %}
+      <div class="actions">
+        <button type="submit" class="btn btn-primary">{{ 'Save changes' if food else 'Add food' }}</button>
+        <a class="btn btn-secondary" href="{{ url_for('foods.detail', food_id=food.id) if food else url_for('foods.index') }}">Cancel</a>
+      </div>
+    </div>
+  </form>
+{% endblock %}

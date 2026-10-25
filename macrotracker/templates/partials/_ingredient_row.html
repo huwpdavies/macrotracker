@@ -1,4 +1,4 @@
-{# One ingredient row in the meal form. Expects `row` (key, food, amount, mode). The food box searches
+{# One ingredient line in the builder. Expects `row` (key, food, amount, mode). The food box searches
    the <datalist id="food-options"> on the page as you type. #}
 <div class="item-row">
   <input type="hidden" name="item_key" value="{{ row.key }}">
@@ -11,6 +11,6 @@
     <option value="amount" {{ 'selected' if row.mode == 'amount' }}>amount</option>
   </select>
   <button type="button" class="icon-btn item-remove" aria-label="Remove ingredient" title="Remove"
-          hx-on:click="var d = this.closest('#meal-fields'); this.closest('.item-row').remove(); htmx.trigger(d, 'input');">✕</button>
+          hx-on:click="var d = this.closest('#build-fields'); this.closest('.item-row').remove(); htmx.trigger(d, 'input');">✕</button>
   {% include "partials/_item_macros.html" %}
 </div>

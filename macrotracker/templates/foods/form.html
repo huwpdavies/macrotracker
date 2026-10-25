@@ -3,6 +3,7 @@
 {% block content %}
   {% set editing = True %}
   <a class="back" href="{{ url_for('foods.index') }}">← Foods</a>
+  {% if not food %}{% with current = "plain" %}{% include "partials/_add_choice.html" %}{% endwith %}{% endif %}
 
   <details class="card quick-fill">
     <summary>Quick fill: paste a nutrition label</summary>

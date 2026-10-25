@@ -1,3 +1,0 @@
-{# HTMX reply while editing: the totals go into #totals; each row's macros replace their own line by id. #}
-{% include "partials/_meal_totals.html" %}
-{% for row in rows %}{% with oob = True %}{% include "partials/_item_macros.html" %}{% endwith %}{% endfor %}

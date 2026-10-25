@@ -1,0 +1,15 @@
+{# Tick existing tags or type new ones (comma separated). Expects `tags` and `chosen` (a set of tag ids). #}
+<section class="section">
+  <div class="section-head">
+    <h2>Tags</h2>
+    <p class="section-sub">for filtering · <a href="{{ url_for('tags.index') }}">manage tags</a></p>
+  </div>
+  <div class="tag-picker">
+    {% for tag in tags %}
+      <label class="tag-option"><input type="checkbox" name="tag_ids" value="{{ tag.id }}" {{ 'checked' if tag.id in chosen }}><span>{{ tag.name }}</span></label>
+    {% endfor %}
+    <label for="new_tags" class="sr-only">New tags</label>
+    <input type="text" id="new_tags" name="new_tags" class="tag-new" value="{{ request.form.get('new_tags', '') }}"
+           placeholder="New tag, e.g. Breakfast" autocomplete="off">
+  </div>
+</section>

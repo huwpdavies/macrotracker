@@ -1,5 +1,5 @@
 """Logging food. Each entry stores a snapshot of its nutrition, so later edits
-to a food or meal never change what was already logged."""
+to a food never change what was already logged."""
 from decimal import Decimal
 
 from ..extensions import db
@@ -7,9 +7,9 @@ from ..models import LogEntry
 from . import nutrition
 
 
-def _entry(day, food, quantity, meal_name=None):
+def _entry(day, food, quantity):
     macros = nutrition.macros_for(food, quantity)
-    return LogEntry(log_date=day, food_id=food.id, meal_name=meal_name,
+    return LogEntry(log_date=day, food_id=food.id,
                     description=food.name, quantity=quantity, unit=food.unit, **macros)
 
 
@@ -19,15 +19,6 @@ def log_food(day, food, quantity):
     db.session.add(entry)
     db.session.commit()
     return entry
-
-
-def log_meal(day, meal, servings_eaten):
-    """Expand a meal into one entry per food, scaled to the servings eaten."""
-    share = Decimal(servings_eaten) / Decimal(meal.servings)
-    entries = [_entry(day, item.food, item.quantity * share, meal_name=meal.name) for item in meal.items]
-    db.session.add_all(entries)
-    db.session.commit()
-    return entries
 
 
 def change_quantity(entry, new_quantity):

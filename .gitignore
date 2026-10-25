@@ -20,3 +20,6 @@ env/
 
 # macOS
 .DS_Store
+
+# Local database exports (personal data, never committed)
+backups/

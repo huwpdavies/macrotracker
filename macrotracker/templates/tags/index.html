@@ -1,0 +1,48 @@
+{% extends "base.html" %}
+{% block title %}Tags · Macro Tracker{% endblock %}
+{% block content %}
+  <a class="back" href="{{ url_for('foods.index') }}">← Foods</a>
+  <header class="page-head">
+    <div>
+      <p class="eyebrow">Library</p>
+      <h1>Tags</h1>
+    </div>
+  </header>
+  <p class="lede">Tags group your foods for filtering, in your food list and on the log. A food can have any number of them.</p>
+
+  <section class="section">
+    <div class="section-head"><h2>Your tags</h2><p class="section-sub">rename by editing the name, then Save</p></div>
+    {% if tags %}
+      <ul class="list tag-rows">
+        {% for tag in tags %}
+          <li>
+            <form method="post" action="{{ url_for('tags.rename', tag_id=tag.id) }}" class="tag-rename">
+              <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+              <label for="tag-{{ tag.id }}" class="sr-only">Name of the {{ tag.name }} tag</label>
+              <input type="text" id="tag-{{ tag.id }}" name="name" value="{{ tag.name }}" maxlength="40" required>
+              <a class="tag-count" href="{{ url_for('foods.index', tag=tag.name) }}">{{ counts.get(tag.id, 0) }} food{{ '' if counts.get(tag.id, 0) == 1 else 's' }}</a>
+              <button type="submit" class="btn btn-secondary btn-sm">Save</button>
+            </form>
+            <form method="post" action="{{ url_for('tags.delete', tag_id=tag.id) }}" class="inline"
+                  onsubmit="return confirm('Delete the {{ tag.name|replace("'", "") }} tag? Foods keep everything else.')">
+              <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+              <button type="submit" class="icon-btn" aria-label="Delete the {{ tag.name }} tag" title="Delete">✕</button>
+            </form>
+          </li>
+        {% endfor %}
+      </ul>
+    {% else %}
+      <p class="empty-inline">No tags yet.</p>
+    {% endif %}
+  </section>
+
+  <section class="section">
+    <div class="section-head"><h2>New tag</h2></div>
+    <form method="post" action="{{ url_for('tags.create') }}" class="tag-create">
+      <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+      <label for="new-tag" class="sr-only">New tag name</label>
+      <input type="text" id="new-tag" name="name" placeholder="e.g. Breakfast" maxlength="40" required>
+      <button type="submit" class="btn btn-primary">Add tag</button>
+    </form>
+  </section>
+{% endblock %}

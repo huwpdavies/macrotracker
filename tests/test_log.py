@@ -7,8 +7,8 @@ import pytest
 from macrotracker import create_app
 from macrotracker.config import TestConfig
 from macrotracker.extensions import db
-from macrotracker.models import Food, LogEntry, Meal, MealItem
-from macrotracker.services import dates
+from macrotracker.models import Food, FoodIngredient, LogEntry, Tag
+from macrotracker.services import dates, recipes
 
 DAY = "2026-10-21"
 
@@ -24,9 +24,11 @@ def client():
                        carbs_g=12, fat_g=22, salt_g=0, fibre_g=10, serving_size=0.5)
         db.session.add_all([tuna, avocado])
         db.session.flush()
-        meal = Meal(name="Lunch", servings=2,
-                    items=[MealItem(food=tuna, quantity=210), MealItem(food=avocado, quantity=1)])
-        db.session.add(meal)
+        lunch = Food(name="Lunch", recipe_servings=2, tags=[Tag(name="Meal")],
+                     ingredients=[FoodIngredient(ingredient=tuna, quantity=210),
+                                  FoodIngredient(ingredient=avocado, quantity=1)])
+        recipes.apply_totals(lunch)   # one serving = 240.5 kcal, 27.25 g protein
+        db.session.add(lunch)
         db.session.commit()
         yield app.test_client()
 
@@ -52,7 +54,7 @@ def test_bad_date_is_404(client):
 
 
 def test_avocado_one_serving_adds_half_the_per_unit_macros(client):
-    add(client, kind="food", item_id="2", amount="1", mode="servings")
+    add(client, item_id="2", amount="1", mode="servings")
     entry = LogEntry.query.one()
     assert entry.quantity == Decimal("0.5")
     assert entry.fat_g == 11 and entry.calories_kcal == 125
@@ -60,28 +62,27 @@ def test_avocado_one_serving_adds_half_the_per_unit_macros(client):
 
 
 def test_raw_amount_in_food_unit(client):
-    add(client, kind="food", item_id="1", amount="50", mode="amount")
+    add(client, item_id="1", amount="50", mode="amount")
     assert LogEntry.query.one().protein_g == Decimal("12.5")
 
 
 def test_editing_a_food_does_not_change_logged_entries(client):
-    add(client, kind="food", item_id="1", amount="1", mode="servings")
+    add(client, item_id="1", amount="1", mode="servings")
     tuna = db.session.get(Food, 1)
     tuna.protein_g = 99
     db.session.commit()
     assert LogEntry.query.one().protein_g == Decimal("26.25")
 
 
-def test_meal_expands_to_one_entry_per_food_scaled_by_servings(client):
-    add(client, kind="meal", item_id="1", amount="1")  # 1 of 2 servings
-    entries = {e.description: e for e in LogEntry.query.all()}
-    assert set(entries) == {"Tuna", "Avocado"}
-    assert entries["Tuna"].quantity == 105 and entries["Avocado"].quantity == Decimal("0.5")
-    assert all(e.meal_name == "Lunch" for e in entries.values())
+def test_built_food_logs_as_one_line(client):
+    add(client, item_id="3", amount="1", mode="servings")   # 1 of 2 servings of Lunch
+    entry = LogEntry.query.one()
+    assert entry.description == "Lunch" and entry.quantity == 1 and entry.unit == "serving"
+    assert entry.calories_kcal == Decimal("240.5") and entry.meal_name is None
 
 
 def test_edit_quantity_rescales_the_snapshot(client):
-    add(client, kind="food", item_id="1", amount="100", mode="amount")
+    add(client, item_id="1", amount="100", mode="amount")
     db.session.get(Food, 1).protein_g = 99  # the food changes...
     db.session.commit()
     client.post("/log/entry/1/edit", data={"quantity": "200"})
@@ -90,31 +91,32 @@ def test_edit_quantity_rescales_the_snapshot(client):
 
 
 def test_delete_entry(client):
-    add(client, kind="food", item_id="1", amount="1", mode="servings")
+    add(client, item_id="1", amount="1", mode="servings")
     resp = client.post("/log/entry/1/delete")
     assert resp.headers["Location"] == f"/log/{DAY}"
     assert LogEntry.query.count() == 0
 
 
 def test_zero_amount_is_rejected(client):
-    resp = add(client, kind="food", item_id="1", amount="0", mode="servings")
+    resp = add(client, item_id="1", amount="0", mode="servings")
     assert b"Enter an amount above zero" in resp.data
     assert LogEntry.query.count() == 0
 
 
 def test_day_page_shows_entries_and_totals(client):
-    add(client, kind="food", item_id="1", amount="1", mode="servings")
+    add(client, item_id="1", amount="1", mode="servings")
     resp = client.get(f"/log/{DAY}")
     assert b"Tuna" in resp.data and b'<span class="tile-value">116</span>' in resp.data  # 115.5 kcal
     assert b"1 item" in resp.data
 
 
-def test_catalogue_lists_every_meal_and_food_with_favourites_first(client):
+def test_catalogue_lists_every_food_with_favourites_first_and_tag_chips(client):
     html = client.get(f"/log/{DAY}").data.decode()
-    cards = re.findall(r'<li data-name="([^"]+)" data-kind="(\w+)" data-fav="(\d)"', html)
-    assert cards == [("tuna", "food", "1"), ("lunch", "meal", "0"), ("avocado", "food", "0")]
-    assert "116&nbsp;kcal" in html          # tuna per serving (115.5)
-    assert "1 of 2 servings" in html        # the meal card
+    cards = re.findall(r'<li data-name="([^"]+)" data-tags="([^"]*)" data-fav="(\d)"', html)
+    assert cards == [("tuna", "|", "1"), ("avocado", "|", "0"), ("lunch", "|meal|", "0")]
+    assert "116&nbsp;kcal" in html                        # tuna per serving (115.5)
+    assert "1 of 2 servings · 2 ingredients" in html      # the built food's card
+    assert 'data-filter="tag:meal"' in html               # a filter chip for each tag in use
 
 
 def hx_add(client, **data):
@@ -122,7 +124,7 @@ def hx_add(client, **data):
 
 
 def test_background_add_replies_with_page_updates_not_a_redirect(client):
-    resp = hx_add(client, kind="food", item_id="1", amount="1", mode="servings")
+    resp = hx_add(client, item_id="1", amount="1", mode="servings")
     html = resp.data.decode()
     assert resp.status_code == 200 and "<html" not in html
     assert 'id="day-total" hx-swap-oob="true"' in html and 'id="eaten" hx-swap-oob="true"' in html
@@ -131,15 +133,16 @@ def test_background_add_replies_with_page_updates_not_a_redirect(client):
 
 
 def test_undo_removes_what_the_last_add_created(client):
-    html = hx_add(client, kind="meal", item_id="1", amount="1").data.decode()   # 2 entries
+    hx_add(client, item_id="1", amount="1", mode="servings")                     # stays
+    html = hx_add(client, item_id="3", amount="1", mode="servings").data.decode()  # undone
     ids = re.findall(r'name="entry_id" value="(\d+)"', html)
-    assert len(ids) == 2
+    assert len(ids) == 1
     html = client.post(f"/log/{DAY}/undo", data={"entry_id": ids}, headers={"HX-Request": "true"}).data.decode()
-    assert "Removed 2 items" in html and LogEntry.query.count() == 0
+    assert "Removed 1 item." in html and [e.description for e in LogEntry.query] == ["Tuna"]
 
 
 def test_background_add_with_zero_shows_an_error_message(client):
-    html = hx_add(client, kind="food", item_id="1", amount="0", mode="servings").data.decode()
+    html = hx_add(client, item_id="1", amount="0", mode="servings").data.decode()
     assert "toast-error" in html and "Enter an amount above zero" in html
 
 
@@ -152,8 +155,8 @@ def test_day_label_adds_the_year_only_for_other_years():
 
 
 def test_eaten_table_shows_each_items_macros_and_a_total_on_log_and_dashboard(client):
-    add(client, kind="food", item_id="1", amount="1", mode="servings")   # tuna: protein 26.25, salt 1.05
-    add(client, kind="food", item_id="2", amount="1", mode="servings")   # avocado: protein 1, fibre 5
+    add(client, item_id="1", amount="1", mode="servings")   # tuna: protein 26.25, salt 1.05
+    add(client, item_id="2", amount="1", mode="servings")   # avocado: protein 1, fibre 5
     for url in (f"/log/{DAY}", f"/?day={DAY}"):
         html = client.get(url).data.decode()
         assert '<td class="num">26.3</td>' in html and '<td class="num">1.05</td>' in html   # tuna row

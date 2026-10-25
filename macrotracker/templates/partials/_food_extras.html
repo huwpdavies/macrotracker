@@ -1,0 +1,17 @@
+{# Below a food's details: its tags and the built foods that use it. Expects `food` and `used_in`. #}
+{% if food.tags %}
+  <section class="section">
+    <div class="section-head"><h2>Tags</h2></div>
+    <ul class="tag-list">
+      {% for tag in food.tags %}<li><a href="{{ url_for('foods.index', tag=tag.name) }}">{{ tag.name }}</a></li>{% endfor %}
+    </ul>
+  </section>
+{% endif %}
+{% if used_in %}
+  <section class="section">
+    <div class="section-head"><h2>Used in</h2><p class="section-sub">editing this food updates these too</p></div>
+    <ul class="tag-list">
+      {% for parent in used_in %}<li><a href="{{ url_for('foods.detail', food_id=parent.id) }}">{{ parent.name }}</a></li>{% endfor %}
+    </ul>
+  </section>
+{% endif %}

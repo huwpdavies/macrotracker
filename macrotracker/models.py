@@ -24,7 +24,22 @@ def _favourite_column():
     return db.Column(db.Boolean, nullable=False, default=False, server_default=text("false"))
 
 
+# Many-to-many: a food can have any number of tags, and a tag any number of foods.
+food_tag = db.Table(
+    "food_tag",
+    db.Column("food_id", db.Integer, db.ForeignKey("food.id", ondelete="CASCADE"), primary_key=True),
+    db.Column("tag_id", db.Integer, db.ForeignKey("tag.id", ondelete="CASCADE"), primary_key=True),
+)
+
+
+class Tag(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    name = db.Column(db.String(40), nullable=False, unique=True)
+
+
 class Food(db.Model):
+    """Everything you eat is a food. A plain food has label values; a built food also has
+    ingredients (other foods), and its values are worked out from them (services/recipes.py)."""
     id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.String(200), nullable=False)
     unit = db.Column(db.String(30), nullable=False, default="g")
@@ -39,35 +54,34 @@ class Food(db.Model):
     # A typical serving, as a quantity of the unit (105 g, or 0.5 unit).
     serving_size = db.Column(db.Numeric(8, 2), nullable=False, default=100)
     serving_label = db.Column(db.String(100))
-    is_favourite = _favourite_column()
-    created_at = db.Column(db.DateTime(timezone=True), default=_now)
-    updated_at = db.Column(db.DateTime(timezone=True), default=_now, onupdate=_now)
-
-
-class Meal(db.Model):
-    id = db.Column(db.Integer, primary_key=True)
-    name = db.Column(db.String(200), nullable=False)
+    # Built foods only: how many servings the whole recipe makes. None means a plain food.
+    recipe_servings = db.Column(db.Numeric(8, 2))
     notes = db.Column(db.Text)
-    # How many servings the whole recipe makes (totals are divided by this for one serving).
-    servings = db.Column(db.Numeric(8, 2), nullable=False, default=1, server_default=text("1"))
     is_favourite = _favourite_column()
     created_at = db.Column(db.DateTime(timezone=True), default=_now)
     updated_at = db.Column(db.DateTime(timezone=True), default=_now, onupdate=_now)
 
-    items = db.relationship(
-        "MealItem", back_populates="meal", cascade="all, delete-orphan"
+    ingredients = db.relationship(
+        "FoodIngredient", foreign_keys="FoodIngredient.food_id", back_populates="food",
+        cascade="all, delete-orphan", order_by="FoodIngredient.id",
     )
+    tags = db.relationship("Tag", secondary=food_tag, order_by="Tag.name", backref="foods")
+
+    @property
+    def is_built(self):
+        return self.recipe_servings is not None
 
 
-class MealItem(db.Model):
+class FoodIngredient(db.Model):
+    """One line of a built food: `quantity` of `ingredient`, in the ingredient's own unit."""
     id = db.Column(db.Integer, primary_key=True)
-    meal_id = db.Column(db.Integer, db.ForeignKey("meal.id", ondelete="CASCADE"), nullable=False)
-    food_id = db.Column(db.Integer, db.ForeignKey("food.id"), nullable=False)
-    # In the food's unit (not servings).
+    food_id = db.Column(db.Integer, db.ForeignKey("food.id", ondelete="CASCADE"), nullable=False, index=True)
+    # No cascade here: a food that's used as an ingredient can't be deleted out from under a recipe.
+    ingredient_id = db.Column(db.Integer, db.ForeignKey("food.id"), nullable=False, index=True)
     quantity = db.Column(db.Numeric(8, 2), nullable=False)
 
-    meal = db.relationship("Meal", back_populates="items")
-    food = db.relationship("Food")
+    food = db.relationship("Food", foreign_keys=[food_id], back_populates="ingredients")
+    ingredient = db.relationship("Food", foreign_keys=[ingredient_id])
 
 
 class Goal(db.Model):
@@ -97,6 +111,7 @@ class LogEntry(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     log_date = db.Column(db.Date, nullable=False, default=today_london, index=True)
     food_id = db.Column(db.Integer, db.ForeignKey("food.id", ondelete="SET NULL"))
+    # Only on entries from before meals became foods: the meal each line was part of.
     meal_name = db.Column(db.String(200))
     description = db.Column(db.String(200), nullable=False)
     quantity = db.Column(db.Numeric(8, 2), nullable=False)

@@ -10,8 +10,17 @@
   </header>
   <div class="search">
     <input type="search" name="q" value="{{ q }}" placeholder="Search foods" aria-label="Search foods"
-           hx-get="{{ url_for('foods.index') }}" hx-trigger="input changed delay:300ms, search" hx-target="#food-list">
+           hx-get="{{ url_for('foods.index') }}" hx-trigger="input changed delay:300ms, search" hx-target="#food-list"
+           hx-include="[name=tag]">
+    <input type="hidden" name="tag" value="{{ tag }}">
   </div>
+  <nav class="filter-chips list-filters" aria-label="Filter by tag">
+    <a class="chip" href="{{ url_for('foods.index') }}" aria-pressed="{{ 'false' if tag else 'true' }}">All</a>
+    {% for t in tags %}
+      <a class="chip" href="{{ url_for('foods.index', tag=t.name) }}" aria-pressed="{{ 'true' if t.name == tag else 'false' }}">{{ t.name }}</a>
+    {% endfor %}
+    <a class="chip chip-quiet" href="{{ url_for('tags.index') }}">Manage tags</a>
+  </nav>
   <div id="food-list">
     {% include "partials/_food_rows.html" %}
   </div>

@@ -6,7 +6,7 @@ from sqlalchemy.orm import selectinload
 
 from ..extensions import db
 from ..forms import EntryForm
-from ..models import Food, LogEntry, Meal, MealItem
+from ..models import Food, LogEntry
 from ..services import dates, nutrition
 from ..services import log as log_service
 
@@ -38,8 +38,10 @@ def today():
 def day(day_text):
     day = _day_or_404(day_text)
     entries = log_service.entries_for(day)
+    cards = _catalogue()
     return render_template(
-        "log/day.html", day=day, entries=entries, totals=log_service.totals(entries), cards=_catalogue(),
+        "log/day.html", day=day, entries=entries, totals=log_service.totals(entries), cards=cards,
+        catalogue_tags=_catalogue_tags(cards),
         label=dates.day_label(day), long_date=dates.long_date(day),
         prev_day=(day - timedelta(days=1)).isoformat(), next_day=(day + timedelta(days=1)).isoformat(),
         is_today=day == dates.today_london(),
@@ -47,20 +49,27 @@ def day(day_text):
 
 
 def _catalogue():
-    """Every meal and food as a card, favourites first, each with its per-serving nutrition."""
-    meals = (Meal.query.options(selectinload(Meal.items).selectinload(MealItem.food))
-             .order_by(Meal.is_favourite.desc(), Meal.name).all())
-    foods = Food.query.order_by(Food.is_favourite.desc(), Food.name).all()
-    cards = [{"kind": "meal", "item": m, "name": m.name,
-              "serving": f"1 of {nutrition.tidy(m.servings)} serving{'' if m.servings == 1 else 's'} · {len(m.items)} foods",
-              "macros": nutrition.divide_macros(nutrition.total_for_items(m.items), m.servings)}
-             for m in meals if m.items]
-    cards += [{"kind": "food", "item": f, "name": f.name,
-               "serving": (f"{f.serving_label} · " if f.serving_label else "") + f"{nutrition.tidy(f.serving_size)} {f.unit}",
-               "macros": nutrition.macros_per_serving(f)}
-              for f in foods]
-    # Favourites first across both kinds, then meals before foods, then by name.
-    return sorted(cards, key=lambda c: (not c["item"].is_favourite, c["kind"] != "meal", c["name"].casefold()))
+    """Every food as a card, favourites first, each with its per-serving nutrition and tags."""
+    foods = (Food.query.options(selectinload(Food.tags), selectinload(Food.ingredients))
+             .order_by(Food.is_favourite.desc(), Food.name).all())
+    cards = []
+    for f in foods:
+        if f.is_built:
+            n = len(f.ingredients)
+            serving = f"1 of {nutrition.tidy(f.recipe_servings)} serving{'' if f.recipe_servings == 1 else 's'} · {n} ingredient{'' if n == 1 else 's'}"
+        else:
+            serving = (f"{f.serving_label} · " if f.serving_label else "") + f"{nutrition.tidy(f.serving_size)} {f.unit}"
+        cards.append({"item": f, "name": f.name, "serving": serving, "macros": nutrition.macros_per_serving(f)})
+    return cards
+
+
+def _catalogue_tags(cards):
+    """The tags that at least one food has, for the filter chips."""
+    seen = {}
+    for card in cards:
+        for tag in card["item"].tags:
+            seen[tag.id] = tag
+    return sorted(seen.values(), key=lambda t: t.name.casefold())
 
 
 def _updates(day, message=None, undo_ids=(), error=False):
@@ -73,7 +82,7 @@ def _updates(day, message=None, undo_ids=(), error=False):
 
 @bp.route("/<day_text>/add", methods=["POST"])
 def add(day_text):
-    """Log a food or meal. From the catalogue (HTMX) it replies with page updates; otherwise it redirects."""
+    """Log a food. From the catalogue (HTMX) it replies with page updates; otherwise it redirects."""
     day = _day_or_404(day_text)
     in_background = bool(request.headers.get("HX-Request"))
 
@@ -87,17 +96,12 @@ def add(day_text):
     if amount is None:
         return done("Enter an amount above zero.", error=True)
 
-    if request.form.get("kind") == "meal":
-        meal = db.get_or_404(Meal, request.form.get("item_id", type=int))
-        if not meal.items:
-            return done(f"{meal.name} has no ingredients yet.", error=True)
-        entries = log_service.log_meal(day, meal, amount)
-        return done(f"Added {meal.name} ({nutrition.tidy(amount)} serving{'' if amount == 1 else 's'}).", entries)
-
+    # A built food logs as one line, like any other food.
     food = db.get_or_404(Food, request.form.get("item_id", type=int))
     quantity = nutrition.quantity_from_servings(food, amount) if request.form.get("mode") == "servings" else amount
     entry = log_service.log_food(day, food, quantity)
-    return done(f"Added {food.name} ({nutrition.tidy(quantity)} {food.unit}).", [entry])
+    unit = ("serving" if quantity == 1 else "servings") if food.unit == "serving" else food.unit
+    return done(f"Added {food.name} ({nutrition.tidy(quantity)} {unit}).", [entry])
 
 
 @bp.route("/<day_text>/undo", methods=["POST"])

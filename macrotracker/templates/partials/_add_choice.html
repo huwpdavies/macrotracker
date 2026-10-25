@@ -1,0 +1,9 @@
+{# On the Add food pages: two ways to make a new food. Expects `current` ("plain" or "built"). #}
+<nav class="add-choice" aria-label="How to add a food">
+  <a href="{{ url_for('foods.new') }}" class="add-option"{% if current == 'plain' %} aria-current="page"{% endif %}>
+    <strong>Add a new food</strong><span>Enter the values from its label</span>
+  </a>
+  <a href="{{ url_for('foods.build') }}" class="add-option"{% if current == 'built' %} aria-current="page"{% endif %}>
+    <strong>Build from ingredients</strong><span>Combine foods you already have, like a recipe</span>
+  </a>
+</nav>

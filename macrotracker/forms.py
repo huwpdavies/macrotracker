@@ -25,11 +25,11 @@ class FoodForm(FlaskForm):
                                 validators=[Optional(), Length(max=100)])
 
 
-class MealForm(FlaskForm):
-    # The ingredient rows are variable-length, so the route reads them straight from request.form.
-    name = StringField("Meal name", validators=[DataRequired(), Length(max=200)])
-    servings = DecimalField("Servings this makes", default=1, places=None,
-                            validators=[DataRequired(), NumberRange(min=0.01, max=1000)])
+class BuiltFoodForm(FlaskForm):
+    # The ingredient lines are variable-length, so the route reads them straight from request.form.
+    name = StringField("Name", validators=[DataRequired(), Length(max=200)])
+    recipe_servings = DecimalField("Servings this makes", default=1, places=None,
+                                   validators=[DataRequired(), NumberRange(min=0.01, max=1000)])
     notes = StringField("Notes (optional)", validators=[Optional(), Length(max=500)])
 
 

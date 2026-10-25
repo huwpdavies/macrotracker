@@ -14,11 +14,12 @@
           <tr>
             <th scope="row" class="name-col">
               <div class="name-cell">
-                {{ star(food, url_for('foods.favourite', food_id=food.id), '#food-list', '[name=q]') }}
+                {{ star(food, url_for('foods.favourite', food_id=food.id), '#food-list', '[name=q], [name=tag]') }}
                 <div>
                   <a href="{{ url_for('foods.detail', food_id=food.id) }}">{{ food.name }}</a>
                   {# The numbers in this row are for one serving, so show what a serving is right under the name. #}
                   <span class="row-meta">{{ food.serving_label or (food.serving_size|num(2) ~ '\u00a0' ~ food.unit) }}{% if food.serving_label %}<span class="serving-size"> · {{ food.serving_size|num(2) }}&nbsp;{{ food.unit }}</span>{% endif %}</span>
+                  {% if food.tags %}<span class="row-tags">{% for t in food.tags %}<span class="tag-mini">{{ t.name }}</span>{% endfor %}</span>{% endif %}
                 </div>
               </div>
             </th>
@@ -28,8 +29,8 @@
       </tbody>
     </table>
   </div>
-{% elif q %}
-  <p class="empty-inline">No foods match "{{ q }}".</p>
+{% elif q or tag %}
+  <p class="empty-inline">No foods match{% if q %} "{{ q }}"{% endif %}{% if tag %} tagged {{ tag }}{% endif %}.</p>
 {% else %}
   <div class="empty">
     <p>Your food library is empty.</p>

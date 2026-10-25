@@ -16,9 +16,8 @@ A simple, phone-friendly web app (dark theme, tangerine accent) for logging what
 ## What it does
 
 - **Dashboard** (home): today's calories and each nutrient against the active goal, with "to go", "on target" and "over" states, previous/next day, and the day's entries.
-- **Log**: a page per day. Search foods and meals, set servings or an exact amount, tap Add. Each entry saves a snapshot of its nutrition, so editing a food later never rewrites history. Meals expand into one entry per food.
-- **Foods**: the library. Values as printed on the label (per 100 g, per 1 unit…), a typical serving, a live per-serving preview, paste-a-label autofill, favourites.
-- **Meals**: groups of foods with totals and per-serving figures.
+- **Log**: a page per day with your foods as a catalogue. Set servings or an exact amount and tap +; it saves in the background, with Undo. Filter by tag. Each entry saves a snapshot of its nutrition, so editing a food later never rewrites history.
+- **Foods**: everything is a food. Either add one from its label (per 100 g, per 1 unit…, with paste-a-label autofill), or build one from other foods, like a recipe; built foods keep themselves up to date when an ingredient changes. Tag foods (Meal, Fruit, Snack… or your own) and favourite them.
 - **Goals**: daily targets. Exactly one is active (enforced by the database); switching is one click.
 
 ## Stack
@@ -71,12 +70,13 @@ macrotracker/
   seed.py                  `flask seed`
   services/                the rules, as plain testable functions
     nutrition.py           macro maths
-    log.py                 logging with snapshots, meal expansion
+    log.py                 logging with snapshots
+    recipes.py             built foods: totals from ingredients, auto-update, loop check, tags
     goals.py               one active goal, transactional switch and delete
     dashboard.py           day totals (func.sum) and progress states
     dates.py               "today" in Europe/London
     label_parser.py        reads pasted nutrition labels
-  blueprints/              routes: dashboard, log, foods, meals, goals
+  blueprints/              routes: dashboard, log, foods (plain and built), tags, goals
   templates/               Jinja pages; partials/ holds shared and HTMX fragments
 public/                    static files (css/main.css, js/htmx.min.js, favicon)
 migrations/                Alembic migrations

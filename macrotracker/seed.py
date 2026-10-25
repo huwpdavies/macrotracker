@@ -2,13 +2,14 @@ import click
 from flask.cli import with_appcontext
 
 from .extensions import db
-from .models import Food, Goal, Meal, MealItem
+from .models import Food, FoodIngredient, Goal, Tag
+from .services import recipes
 
 
 @click.command("seed")
 @with_appcontext
 def seed_command():
-    """Add sample foods, a meal and two goals (only if the database is empty)."""
+    """Add tags, sample foods (one built from the others) and two goals, only if the database is empty."""
     if Food.query.first() or Goal.query.first():
         click.echo("Database already has data; nothing seeded.")
         return
@@ -25,14 +26,20 @@ def seed_command():
     egg = Food(name="Egg", calories_kcal=78, unit="unit", basis_amount=1,
                protein_g=6.3, carbs_g=0.4, fat_g=5, salt_g=0.35, fibre_g=0,
                serving_size=1, serving_label="1 egg")
+    recipes.ensure_default_tags()
+    db.session.flush()
+    tags = {t.name: t for t in Tag.query.all()}
+    avocado.tags = [tags["Fruit"]]
+    oats.tags = [tags["Carb"], tags["Fibre"]]
+    tuna.tags = [tags["Meat"]]
     db.session.add_all([tuna, avocado, oats, egg])
-    db.session.flush()  # gives each food an id so the meal items can point at them
+    db.session.flush()  # gives each food an id so the built food's ingredients can point at them
 
-    lunch = Meal(name="Tuna and avocado lunch", notes="Quick high-protein lunch")
-    lunch.items = [
-        MealItem(food=tuna, quantity=105),
-        MealItem(food=avocado, quantity=0.5),
-    ]
+    lunch = Food(name="Tuna and avocado lunch", notes="Quick high-protein lunch", recipe_servings=1,
+                 tags=[tags["Meal"]],
+                 ingredients=[FoodIngredient(ingredient=tuna, quantity=105),
+                              FoodIngredient(ingredient=avocado, quantity=0.5)])
+    recipes.apply_totals(lunch)
     db.session.add(lunch)
 
     db.session.add_all([
@@ -42,4 +49,4 @@ def seed_command():
              salt_g=6, fibre_g=35, is_active=False),
     ])
     db.session.commit()
-    click.echo("Seeded 4 foods, 1 meal and 2 goals.")
+    click.echo("Seeded 7 tags, 5 foods (1 built from ingredients) and 2 goals.")

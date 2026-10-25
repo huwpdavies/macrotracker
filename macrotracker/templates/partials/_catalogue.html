@@ -1,28 +1,26 @@
-{# Every meal and food as a card. Add posts in the background (HTMX) and the reply updates the
+{# Every food as a card. Add posts in the background (HTMX) and the reply updates the
    day total, the Eaten list and the message at the bottom of the screen, so the page never reloads. #}
 {% if cards %}
   <div class="catalogue-tools">
     <div class="search">
-      <input type="search" id="catalogue-filter" placeholder="Filter foods and meals" aria-label="Filter foods and meals"
+      <input type="search" id="catalogue-filter" placeholder="Filter foods" aria-label="Filter foods"
              aria-controls="catalogue" autocomplete="off">
     </div>
     <div class="filter-chips" role="group" aria-label="Show">
       <button type="button" class="chip" data-filter="all" aria-pressed="true">All</button>
       <button type="button" class="chip" data-filter="fav" aria-pressed="false">★ Favourites</button>
-      <button type="button" class="chip" data-filter="meal" aria-pressed="false">Meals</button>
-      <button type="button" class="chip" data-filter="food" aria-pressed="false">Foods</button>
+      {% for tag in catalogue_tags %}<button type="button" class="chip" data-filter="tag:{{ tag.name|lower }}" aria-pressed="false">{{ tag.name }}</button>{% endfor %}
     </div>
   </div>
   <ul class="catalogue" id="catalogue">
     {% for card in cards %}
       {% set item = card.item %}{% set m = card.macros %}
-      <li data-name="{{ card.name|lower }}" data-kind="{{ card.kind }}" data-fav="{{ 1 if item.is_favourite else 0 }}">
+      <li data-name="{{ card.name|lower }}" data-tags="|{% for t in item.tags %}{{ t.name|lower }}|{% endfor %}" data-fav="{{ 1 if item.is_favourite else 0 }}">
         <form class="product" hx-post="{{ url_for('log.add', day_text=day.isoformat()) }}" hx-swap="none">
-          <input type="hidden" name="kind" value="{{ card.kind }}">
           <input type="hidden" name="item_id" value="{{ item.id }}">
           <div class="product-head">
             <span class="product-name">{% if item.is_favourite %}<span class="fav" aria-label="Favourite">★</span> {% endif %}{{ card.name }}</span>
-            {% if card.kind == "meal" %}<span class="product-kind">Meal</span>{% endif %}
+            {% if item.tags %}<span class="product-tags">{% for t in item.tags %}<span class="tag-mini">{{ t.name }}</span>{% endfor %}</span>{% endif %}
           </div>
           <p class="product-serving"><span>{{ card.serving }}</span><span class="kcal-chip">{{ m.calories_kcal|num(0) }}&nbsp;kcal</span></p>
           <p class="product-macros">
@@ -34,7 +32,7 @@
               <input type="number" name="amount" value="1" min="0" step="any" inputmode="decimal" aria-label="Amount of {{ card.name }}">
               <button type="button" class="step" data-step="1" aria-label="More {{ card.name }}">+</button>
             </div>
-            {% if card.kind == "food" %}
+            {% if not item.is_built %}
               <select name="mode" aria-label="Amount of {{ card.name }} is in" data-unit="{{ item.unit }}">
                 <option value="servings">serving</option>
                 <option value="amount">{{ item.unit }}</option>

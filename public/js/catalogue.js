@@ -13,7 +13,8 @@
     var shown = 0;
     list.querySelectorAll(":scope > li").forEach(function (li) {
       var ok = (!words || li.dataset.name.indexOf(words) !== -1) &&
-        (mode === "all" || (mode === "fav" ? li.dataset.fav === "1" : li.dataset.kind === mode));
+        (mode === "all" || (mode === "fav" ? li.dataset.fav === "1"
+          : li.dataset.tags.indexOf("|" + mode.slice(4) + "|") !== -1));  // "tag:fruit" matches "|fruit|"
       li.hidden = !ok;
       if (ok) shown++;
     });

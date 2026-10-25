@@ -4,6 +4,7 @@
   <a class="back" href="{{ url_for('foods.index') }}">← Foods</a>
   {% set editing = False %}
   {% include "foods/_sheet.html" %}
+  {% include "partials/_food_extras.html" %}
 
   <div class="actions">
     <a class="btn btn-primary" href="{{ url_for('foods.edit', food_id=food.id) }}">Edit food</a>

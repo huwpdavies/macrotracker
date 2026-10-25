@@ -32,7 +32,7 @@ source .venv/bin/activate
 pip install -r requirements.txt
 cp .env.example .env          # then fill in the values below
 flask --app app db upgrade    # create or update the tables
-flask --app app seed          # optional: sample foods, a meal and two goals (only if empty)
+flask --app app seed          # optional: tags, sample foods (one built from the others) and two goals (only if empty)
 flask --app app run --debug   # http://127.0.0.1:5000
 ```
 
@@ -64,7 +64,7 @@ app.py                     Vercel entry point: app = create_app()
 macrotracker/
   __init__.py              create_app(): config, extensions, blueprints, filters
   config.py                settings from environment variables (NullPool for serverless)
-  models.py                Food, Meal, MealItem, Goal, LogEntry
+  models.py                Food, FoodIngredient, Tag, Goal, LogEntry
   forms.py                 Flask-WTF forms
   errors.py                friendly 404 / 500 / "database unreachable" pages
   seed.py                  `flask seed`
